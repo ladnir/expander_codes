@@ -1,0 +1,586 @@
+
+\section{Expander ensembles}
+\label{sec:expander-enumerators}
+
+Expand--Accumulate and Expand--Convolute use a sparse random matrix before a
+recursive rate-one map.  Their published distance proofs bound the resulting
+state process by a concentration inequality.  We instead keep its exact
+input--output enumerator.  This section supplies the expander part of that
+enumerator and proves the composition rule needed below.
+
+Except in the final subsection, all vectors and matrices are binary.  We use the
+convention that a binomial coefficient is zero outside its natural range.
+
+\subsection{Independent Bernoulli entries}
+
+Let $\dist^{\mathrm{Ber}}_{k,n,p}$ be the distribution on $k\times n$ matrices
+whose entries are independent Bernoulli random variables with parameter
+$p\in(0,1/2)$.  This is the ensemble used by the provable variants of
+Expand--Accumulate and Expand--Convolute.
+
+For $r\in[k]$, define
+\begin{equation}
+ q_r:=\frac{1-(1-2p)^r}{2}.
+ \label{eq:bernoulli-expander-parity}
+\end{equation}
+
+\begin{lemma}[Bernoulli expander enumerator]
+\label{lem:bernoulli-expander-enumerator}
+For $r\in[k]$ and $u\in[0,n]$,
+\begin{equation}
+ \boxed{
+ \enum^{\mathrm{Ber}}_{r,u}
+   =
+ \binom{k}{r}\binom{n}{u}q_r^u(1-q_r)^{n-u}.
+ }
+ \label{eq:bernoulli-expander-enumerator}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Fix a message $\xv$ of weight $r$.  Each coordinate of $\xv\B$ is the parity
+of $r$ independent Bernoulli variables.  The piling-up identity gives its
+nonzero probability as $q_r$.  Different output coordinates use different
+columns of $\B$ and are independent.  Thus $\xv\B$ has independent Bernoulli
+coordinates with parameter $q_r$.  There are $\binom{k}{r}$ possible messages,
+which proves \eqref{eq:bernoulli-expander-enumerator}.
+\end{proof}
+
+\subsection{Fixed column degree}
+
+The original expression in this draft described a different ensemble.  We
+record the normalized formula because fixed column degree may be useful for a
+later implementation.  Let $\dist^{\mathrm{col}}_{k,n,d}$ sample each column
+independently and uniformly from the binary vectors of weight $d$.  For a
+message of weight $r$, put
+\begin{align}
+ O_{r,d}
+   &:=\sum_{b\geq 0}\binom{r}{2b+1}\binom{k-r}{d-2b-1},
+ &
+ Z_{r,d}
+   &:=\sum_{b\geq 0}\binom{r}{2b}\binom{k-r}{d-2b}.
+ \label{eq:column-expander-odd-even}
+\end{align}
+Here $O_{r,d}$ and $Z_{r,d}$ count columns whose intersection with the message
+support has odd and even cardinality, respectively.  In particular,
+$O_{r,d}+Z_{r,d}=\binom{k}{d}$.
+
+\begin{lemma}[Fixed-column expander enumerator]
+\label{lem:column-expander-enumerator}
+For $r\in[k]$ and $u\in[0,n]$,
+\begin{equation}
+ \boxed{
+ \enum^{\mathrm{col}}_{r,u}
+   =
+ \binom{k}{r}\binom{n}{u}
+ \left(\frac{O_{r,d}}{\binom{k}{d}}\right)^u
+ \left(\frac{Z_{r,d}}{\binom{k}{d}}\right)^{n-u}.
+ }
+ \label{eq:column-expander-enumerator}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Fix a message support of size $r$.  Each output coordinate is one precisely
+when its sampled column has odd intersection with that support.  The columns
+are independent, and their odd-intersection probability is
+$O_{r,d}/\binom{k}{d}$.  Multiplication by $\binom{k}{r}$ counts all messages.
+\end{proof}
+
+The factors $\binom{k}{d}^{-n}$ in
+\eqref{eq:column-expander-enumerator} are essential.  Omitting them counts
+matrices instead of averaging over the matrix ensemble.
+
+\subsection{Fixed row weight}
+
+Concrete implementations often sample each row with an exact weight.  Let
+$\dist^{\mathrm{row}}_{k,n,d}$ sample the $k$ rows independently and uniformly
+from the binary vectors of length $n$ and weight $d$.  Define the binary
+Krawtchouk polynomial
+\begin{equation}
+ K_a^{(n)}(j)
+   :=
+ \sum_{t\in\Zbb}(-1)^t\binom{j}{t}\binom{n-j}{a-t}.
+ \label{eq:krawtchouk-definition}
+\end{equation}
+
+\begin{lemma}[Fixed-row expander enumerator]
+\label{lem:row-expander-enumerator}
+For $r\in[k]$ and $u\in[0,n]$,
+\begin{equation}
+ \boxed{
+ \enum^{\mathrm{row}}_{r,u}
+   =
+ \binom{k}{r}\frac{\binom{n}{u}}{2^n\binom{n}{d}^{r}}
+ \sum_{j=0}^{n}K_d^{(n)}(j)^r K_j^{(n)}(u).
+ }
+ \label{eq:row-expander-enumerator}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Fix a message of weight $r$.  Its image is the sum of $r$ independent uniform
+weight-$d$ rows.  Let $f_d$ be the indicator of the weight-$d$ Hamming slice.
+The Fourier transform of $f_d$ at a character of weight $j$ is
+$K_d^{(n)}(j)$.  Fourier inversion shows that the number of ordered row tuples
+whose sum equals a fixed word of weight $u$ is
+\[
+ 2^{-n}\sum_{j=0}^{n}K_d^{(n)}(j)^r K_j^{(n)}(u).
+\]
+Divide by $\binom{n}{d}^r$, multiply by the $\binom{n}{u}$ possible output
+words, and then multiply by the $\binom{k}{r}$ possible messages.
+\end{proof}
+
+Formula \eqref{eq:row-expander-enumerator} is exact, but its alternating sum is
+not a numerically stable evaluation method at large lengths.  A certified
+implementation should use a recurrence, interval arithmetic, or an equivalent
+coefficient representation.
+
+The following recurrence gives such a representation using only nonnegative
+terms.  For $u,v\in[0,n]$, set
+\begin{equation}
+ P_d(u,v)
+ :=
+ \frac{\binom{u}{j}\binom{n-u}{d-j}}{\binom{n}{d}},
+ \qquad
+ j:=\frac{u+d-v}{2},
+ \label{eq:row-shell-transition}
+\end{equation}
+where the right-hand side is zero unless $j$ is an integer in
+$[0,u]\cap[d-(n-u),d]$.  Define $\rho_{0,0}=1$ and
+$\rho_{0,u}=0$ for $u>0$, and recursively define
+\begin{equation}
+ \rho_{r+1,v}:=\sum_{u=0}^{n}\rho_{r,u}P_d(u,v).
+ \label{eq:row-shell-recurrence}
+\end{equation}
+
+\begin{lemma}[Positive fixed-row recurrence]
+\label{lem:row-shell-recurrence}
+For a fixed message of weight $r$, the probability that its image under
+$\B\gets\dist^{\mathrm{row}}_{k,n,d}$ has weight $u$ is $\rho_{r,u}$.
+Consequently,
+\begin{equation}
+ \enum^{\mathrm{row}}_{r,u}=\binom{k}{r}\rho_{r,u}.
+ \label{eq:row-expander-positive-enumerator}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Suppose that the sum of the first $r$ selected rows has support size $u$.
+The next row is a uniform $d$-subset of $[n]$.  Its intersection size $j$
+with the current support has probability
+\[
+ \frac{\binom{u}{j}\binom{n-u}{d-j}}{\binom{n}{d}}.
+\]
+The symmetric difference of the two supports has size $u+d-2j$.  This is
+exactly the transition in \eqref{eq:row-shell-transition}.  Induction gives
+\eqref{eq:row-shell-recurrence}, and multiplication by the number
+$\binom{k}{r}$ of messages gives
+\eqref{eq:row-expander-positive-enumerator}.
+\end{proof}
+
+Unlike \eqref{eq:row-expander-enumerator}, recurrence
+\eqref{eq:row-shell-recurrence} has no cancellation.  Its state space after
+$r$ rows is contained in $[0,\min\{rd,n\}]$, and every state has at most
+$d+1$ outgoing transitions.
+
+\subsection{Region-stratified left-regular rows}
+\label{sec:region-left-regular-expander}
+
+The fixed-row ensemble controls the total row weight but does not control
+where the nonzero entries occur.  A stronger ensemble spreads every row over
+the codeword.  Assume that $n=d\ell$, and partition the columns into $d$
+consecutive regions $I_1,\ldots,I_d$, each of length $\ell$.  The distribution
+$\dist^{\mathrm{reg}}_{k,n,d}$ samples independent indices
+$J_{i,a}\gets[\ell]$ for $(i,a)\in[k]\times[d]$ and sets
+\begin{equation}
+ B_{i,(a-1)\ell+J_{i,a}}=1.
+ \label{eq:region-left-regular-definition}
+\end{equation}
+All other entries are zero.  Every row therefore has weight $d$ and has
+exactly one nonzero entry in each region.  We call this ensemble a
+\emph{region-stratified left-regular expander}.  The shorter term
+\emph{regular expander} refers to the same ensemble when the regional
+constraint is clear.  The right degrees remain random.
+
+For a region of length $\ell$, define $\rho^{(\ell)}_{0,0}=1$ and
+$\rho^{(\ell)}_{0,u}=0$ for $u>0$.  For $r\geq0$, set
+\begin{equation}
+ \rho^{(\ell)}_{r+1,v}
+ =\rho^{(\ell)}_{r,v-1}\frac{\ell-v+1}{\ell}
+  +\rho^{(\ell)}_{r,v+1}\frac{v+1}{\ell},
+ \label{eq:region-left-regular-shell-recurrence}
+\end{equation}
+where terms with indices outside $[0,\ell]$ are zero.
+
+\begin{lemma}[Region-stratified shell law]
+\label{lem:region-left-regular-shell-law}
+Fix a message of weight $r$ and sample
+$\B\gets\dist^{\mathrm{reg}}_{k,n,d}$.  The restrictions of $\xv\B$ to the
+$d$ regions are independent.  In each region, its weight has distribution
+$\rho^{(\ell)}_{r,\cdot}$, and conditional on weight $u$, its support is
+uniform among the $u$-subsets of that region.  Consequently, the expected
+number of weight-$r$ messages whose regional weights are
+$(u_1,\ldots,u_d)$ is
+\begin{equation}
+ \boxed{
+ \binom{k}{r}\prod_{a=1}^{d}\rho^{(\ell)}_{r,u_a}.
+ }
+ \label{eq:region-left-regular-enumerator}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Within one region, the image is the parity of $r$ independent uniform unit
+vectors.  If its current weight is $u$, the next unit vector decreases the
+weight with probability $u/\ell$ and increases it with probability
+$(\ell-u)/\ell$.  This gives
+\eqref{eq:region-left-regular-shell-recurrence}.  Coordinate-permutation
+symmetry gives the conditional uniformity.  The samples in distinct regions
+are independent.  Multiplication by $\binom{k}{r}$ counts the messages.
+\end{proof}
+
+Two bounds make the regional enumerator practical outside the small-weight
+range.  For $r\geq1$, define
+\begin{equation}
+ q^{\mathrm{reg}}_r
+ :=\frac{1-\exp(-2r/\ell)}{2},
+ \qquad
+ \gamma_r:=\frac{e^r r!}{r^r}.
+ \label{eq:regular-poisson-parameters}
+\end{equation}
+
+\begin{lemma}[Poissonized left-regular comparison]
+\label{lem:regular-poisson-comparison}
+Fix a weight-$r$ message $\xv$, sample
+$\B\gets\dist^{\mathrm{reg}}_{k,n,d}$, and let
+$\mathbf Z\in\Fbb_2^n$ have independent Bernoulli coordinates with parameter
+$q^{\mathrm{reg}}_r$.  For every function
+$F:\Fbb_2^n\to\mathbb R_{\geq0}$,
+\begin{equation}
+ \Ebb_{\B}[F(\xv\B)]
+ \leq\gamma_r^d\Ebb_{\mathbf Z}[F(\mathbf Z)].
+ \label{eq:regular-poisson-comparison}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+In each region, replace the $r$ unit-vector samples by independent Poisson
+counts of mean $r/\ell$ at its $\ell$ coordinates.  Conditional on total count
+$r$, these counts have the multinomial law of the original samples.  Without
+conditioning, their parities are independent Bernoulli variables with
+parameter $q^{\mathrm{reg}}_r$.  The regional total is Poisson with mean $r$,
+so the conditioning event has probability
+$e^{-r}r^r/r!=\gamma_r^{-1}$.  The regional totals are independent.  Dropping
+their joint conditioning event from the numerator proves
+\eqref{eq:regular-poisson-comparison}.
+\end{proof}
+
+Stirling's formula gives $\gamma_r=\Theta(\sqrt r)$.  The comparison penalty
+is therefore polynomial in $r$ for fixed left degree $d$.
+
+\begin{lemma}[Left-regular point-mass bound]
+\label{lem:regular-point-mass}
+For the same fixed message and every $\yv\in\Fbb_2^n$,
+\begin{equation}
+ \Pr_{\B}[\xv\B=\yv]
+ \leq2^{d-n}\left(1+e^{-2r/\ell}\right)^n.
+ \label{eq:regular-point-mass}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+In one region, the Fourier eigenvalue of the $r$-step unit-vector walk at a
+character of weight $j$ is $(1-2j/\ell)^r$.  Fourier inversion bounds each
+regional point probability by $2^{-\ell}\Lambda_{\ell,r}$, where
+\[
+ \Lambda_{\ell,r}:=
+ \sum_{j=0}^{\ell}\binom{\ell}{j}
+       \left|1-\frac{2j}{\ell}\right|^r.
+\]
+Pair $j$ with $\ell-j$.  For $j\leq\ell/2$, the inequality
+$1-x\leq e^{-x}$ gives
+\[
+ \Lambda_{\ell,r}
+ \leq2\sum_{j=0}^{\ell}\binom{\ell}{j}e^{-2rj/\ell}
+ =2(1+e^{-2r/\ell})^\ell.
+\]
+The $d$ regions are independent.  Taking the $d$th power proves
+\eqref{eq:regular-point-mass}.
+\end{proof}
+
+The regional constraint is the mathematical property needed below.  It can be
+implemented by arranging the row samples as a bit matrix, transposing the
+block and region indices, and applying independent permutations within the
+regions.  We refer to that implementation as a block-to-region transpose;
+the ensemble itself remains the region-stratified left-regular expander.
+
+\subsection{Randomly labeled prime-field rows}
+\label{sec:prime-field-expander}
+
+We now give the prime-field analogue used later.  This is the weighted model,
+not the addition-only model: every sampled expander edge receives an
+independent uniform label in $\Fbb_p^*$.  This choice is the direct analogue
+of the random nonzero weighters in nonbinary BAA and RAA codes.  It is also the
+point at which the construction incurs one field multiplication per expander
+edge.  If all edge labels are fixed to one, the distribution below depends on
+the complete message-symbol composition, and none of the support-only formulas
+in this subsection applies.
+
+Put $s:=p-1$.  In the Bernoulli ensemble, an entry of $\B$ is zero with
+probability $1-\theta$ and equals each element of $\Fbb_p^*$ with probability
+$\theta/s$.  For a message support of size $r$, define
+\begin{equation}
+ q^{(p)}_r
+ :=\frac{s}{p}\left(1-
+       \left(1-\frac{p\theta}{s}\right)^r\right).
+ \label{eq:prime-bernoulli-activation}
+\end{equation}
+
+\begin{lemma}[Labeled Bernoulli expander law]
+\label{lem:prime-bernoulli-expander}
+Fix $\xv\in\Fbb_p^k$ with support size $r$.  The coordinates of $\xv\B$
+are independent.  Each coordinate is zero with probability $1-q^{(p)}_r$;
+conditional on being nonzero, it is uniform on $\Fbb_p^*$.
+\end{lemma}
+
+\begin{proof}
+For a nontrivial additive character $\chi$ of $\Fbb_p$, one active row
+contribution $Z$ satisfies
+\[
+ \Ebb[\chi(Z)]
+ =1-\theta+\frac{\theta}{s}\sum_{a\in\Fbb_p^*}\chi(a)
+ =1-\frac{p\theta}{s}.
+\]
+The $r$ active rows are independent.  Fourier inversion on the additive group
+of $\Fbb_p$ gives zero mass
+$p^{-1}(1+s(1-p\theta/s)^r)$ and equal mass
+$p^{-1}(1-(1-p\theta/s)^r)$ at every nonzero value.  Distinct columns use
+disjoint samples and are therefore independent.
+\end{proof}
+
+The labeled regular ensemble retains the support sampling in
+\eqref{eq:region-left-regular-definition} and independently labels every
+chosen entry by a uniform element of $\Fbb_p^*$.  For one region, let
+$\rho^{(p,\ell)}_{0,0}=1$.  Starting from terms outside $[0,\ell]$ equal to
+zero, define
+\begin{equation}
+\begin{split}
+ \rho^{(p,\ell)}_{r+1,v}
+ ={}&\rho^{(p,\ell)}_{r,v-1}\frac{\ell-v+1}{\ell}
+ +\rho^{(p,\ell)}_{r,v}\frac{v}{\ell}\frac{p-2}{p-1}\\
+ &+\rho^{(p,\ell)}_{r,v+1}\frac{v+1}{\ell}\frac{1}{p-1}.
+\end{split}
+\label{eq:prime-regular-shell-recurrence}
+\end{equation}
+
+\begin{lemma}[Labeled regular shell law]
+\label{lem:prime-regular-shell-law}
+Fix a message whose support has size $r$.  The $d$ regional outputs are
+independent.  In each region, the weight has distribution
+$\rho^{(p,\ell)}_{r,\cdot}$; conditional on weight $u$, the output is uniform
+among the $\binom{\ell}{u}s^u$ vectors of weight $u$ in $\Fbb_p^\ell$.
+\end{lemma}
+
+\begin{proof}
+From a vector of weight $u$, a labeled unit step chooses a zero coordinate
+with probability $(\ell-u)/\ell$ and raises the weight.  At a nonzero
+coordinate, its uniform label cancels the current value with probability
+$1/(p-1)$ and otherwise preserves the weight.  This proves
+\eqref{eq:prime-regular-shell-recurrence}.  The walk is invariant under
+coordinate permutations and independent nonzero coordinate scalings.  This
+monomial symmetry is transitive on every $p$-ary Hamming shell, which proves
+the conditional uniformity.
+\end{proof}
+
+For the labeled regular ensemble, put
+\begin{equation}
+ q^{(p),\mathrm{reg}}_r
+ :=\frac{s}{p}\left(1-
+       \exp\left(-\frac{pr}{s\ell}\right)\right).
+ \label{eq:prime-regular-poisson-activation}
+\end{equation}
+The Poisson conditioning argument in
+Lemma~\ref{lem:regular-poisson-comparison} is unchanged.  After removing the
+conditioning, each coordinate is zero with probability
+$1-q^{(p),\mathrm{reg}}_r$ and otherwise uniform on $\Fbb_p^*$.  Consequently,
+for every nonnegative $F:\Fbb_p^n\to\mathbb R_{\geq0}$,
+\begin{equation}
+ \Ebb_{\B}[F(\xv\B)]
+ \leq \gamma_r^d\Ebb_{\mathbf Z}[F(\mathbf Z)],
+ \label{eq:prime-regular-poisson-comparison}
+\end{equation}
+where $\gamma_r=e^r r!/r^r$ and $\mathbf Z$ has the independent coordinate law
+just displayed.
+
+For later dense bounds, define
+\begin{align}
+ A_{p,\ell,r}
+ &:=\left(1+s\exp\left(-\frac{pr}{s\ell}\right)\right)^\ell,
+ \nonumber\\
+ B_{p,\ell,r}
+ &:=s^{\ell-r}
+   \left(1+s^{-1}\exp\left(-\frac{pr}{\ell}\right)\right)^\ell.
+ \label{eq:prime-regular-fourier-terms}
+\end{align}
+
+\begin{lemma}[Labeled regular point mass]
+\label{lem:prime-regular-point-mass}
+For every fixed support-$r$ message and every $\yv\in\Fbb_p^n$,
+\begin{equation}
+ \Pr_{\B}[\xv\B=\yv]
+ \leq p^{-n}\bigl(A_{p,\ell,r}+B_{p,\ell,r}\bigr)^d.
+ \label{eq:prime-regular-point-mass}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+A character of $\Fbb_p^\ell$ with support size $j$ is an eigenvector of one
+labeled unit step with eigenvalue
+$1-pj/(s\ell)$.  There are $\binom{\ell}{j}s^j$ such characters.  On the
+nonnegative part of the spectrum,
+$|1-pj/(s\ell)|^r\leq\exp(-prj/(s\ell))$, whose full binomial sum is
+$A_{p,\ell,r}$.  On the negative part, substitute $h=\ell-j$ and use
+\[
+ \left|1-\frac{pj}{s\ell}\right|^r
+ \leq s^{-r}\exp\left(-\frac{prh}{\ell}\right).
+\]
+The corresponding full binomial sum is $B_{p,\ell,r}$.  Fourier inversion
+bounds a regional point by
+$p^{-\ell}(A_{p,\ell,r}+B_{p,\ell,r})$.  Independence of the regions proves
+\eqref{eq:prime-regular-point-mass}.
+\end{proof}
+
+\subsection{Composition without an explicit interleaver}
+
+The expander output is exchangeable even though the constructions do not place
+an interleaver after the expander.  This symmetry gives the same enumerator
+composition rule as a uniform interleaver.
+
+\begin{lemma}[Exchangeable serial composition]
+\label{lem:exchangeable-serial-composition}
+Let $\B\gets\dist_1$ be a random $k\times n$ matrix such that
+$\B\pi$ and $\B$ have the same distribution for every $n\times n$ permutation
+matrix $\pi$.  Independently sample an $n\times N$ matrix
+$\C\gets\dist_2$.  Then
+\begin{equation}
+ \boxed{
+ \enum^{\dist_1\dist_2}_{r,h}
+   =
+ \sum_{u=0}^{n}
+ \frac{\enum^{\dist_1}_{r,u}\enum^{\dist_2}_{u,h}}
+      {\binom{n}{u}}.
+ }
+ \label{eq:exchangeable-serial-composition}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Fix a message $\xv$ and condition on $\hw{\xv\B}=u$.  Column-exchangeability
+implies that $\xv\B$ is uniform on the weight-$u$ Hamming slice.  Averaging
+over the independent matrix $\C$, the conditional probability of output
+weight $h$ is therefore
+$\enum^{\dist_2}_{u,h}/\binom{n}{u}$.  Sum over $u$, then sum over all messages
+of weight $r$.
+\end{proof}
+
+All three expander ensembles above satisfy the hypothesis of
+Lemma~\ref{lem:exchangeable-serial-composition}.
+
+\subsection{Exact first moment for Expand--Accumulate}
+
+Let $\A\in\Fbb_2^{n\times n}$ be the accumulator from
+Section~\ref{sec:RA}.  Its input--output enumerator is
+\begin{equation}
+ \enum^{\acc}_{u,h}
+   =
+ \binom{h-1}{\lceil u/2\rceil-1}
+ \binom{n-h}{\lfloor u/2\rfloor}
+ \label{eq:accumulator-enumerator-recalled}
+\end{equation}
+for $u,h\geq 1$, together with
+$\enum^{\acc}_{0,0}=1$ and $\enum^{\acc}_{u,0}=0$ for $u>0$.
+
+For $u\in[0,n]$ and $L\in[0,n]$, define the accumulator slice tail
+\begin{equation}
+ Q_{n,L}(u):=
+ \begin{cases}
+  1,&u=0,\\[2mm]
+  \displaystyle
+  \sum_{j=\lceil u/2\rceil}^{\min\{u,L\}}
+  \frac{\binom{L}{j}\binom{n-L}{u-j}}{\binom{n}{u}},&u>0.
+ \end{cases}
+ \label{eq:accumulator-slice-tail}
+\end{equation}
+
+\begin{lemma}[Positive accumulator slice tail]
+\label{lem:accumulator-slice-tail}
+If the accumulator input is uniform on the weight-$u$ slice, then its output
+has weight at most $L$ with probability $Q_{n,L}(u)$.
+\end{lemma}
+
+\begin{proof}
+For $u>0$, put $a=\lceil u/2\rceil$ and $b=\lfloor u/2\rfloor$.
+Summing \eqref{eq:accumulator-enumerator-recalled} over $h\leq L$ gives
+\[
+ \sum_{h=1}^{L}\binom{h-1}{a-1}\binom{n-h}{b}.
+\]
+This sum counts weight-$u$ subsets by the location $h$ of their $a$-th
+smallest element.  Counting the same subsets by the number $j$ of elements
+in $[L]$ gives
+\[
+ \sum_{j=a}^{\min\{u,L\}}\binom{L}{j}\binom{n-L}{u-j}.
+\]
+Division by $\binom{n}{u}$ proves
+\eqref{eq:accumulator-slice-tail}.  The case $u=0$ is immediate.
+\end{proof}
+
+\begin{theorem}[Exact Expand--Accumulate first moment]
+\label{thm:expand-accumulate-first-moment}
+Let $\B$ follow any expander ensemble in this section and set $\G:=\B\A$.
+For $L\in[0,n]$, define
+\begin{equation}
+ \mu_{\mathrm{EA}}(L)
+   :=
+ \sum_{r=1}^{k}\sum_{u=0}^{n}\sum_{h=0}^{L}
+ \frac{\enum^{\B}_{r,u}\enum^{\acc}_{u,h}}{\binom{n}{u}}.
+ \label{eq:expand-accumulate-first-moment}
+\end{equation}
+Then $\mu_{\mathrm{EA}}(L)$ is the expected number of nonzero messages whose
+encodings have weight at most $L$.  Consequently,
+\begin{equation}
+ \Pr\left[\exists\xv\neq 0:\ \hw{\xv\G}\leq L\right]
+ \leq \mu_{\mathrm{EA}}(L).
+ \label{eq:expand-accumulate-failure}
+\end{equation}
+In particular, the same expression upper-bounds the probability that the
+generated code has minimum distance at most $L$.
+\end{theorem}
+
+\begin{proof}
+Lemma~\ref{lem:exchangeable-serial-composition} and
+\eqref{eq:accumulator-enumerator-recalled} give the expected number in
+\eqref{eq:expand-accumulate-first-moment}.  The event in
+\eqref{eq:expand-accumulate-failure} implies that this nonnegative count is at
+least one.  Markov's inequality proves the probability bound.
+\end{proof}
+
+Unlike the earlier Markov-chain argument, Theorem~\ref{thm:expand-accumulate-first-moment}
+does not replace the accumulator weight distribution by a concentration bound.
+It applies equally to Bernoulli, fixed-column, and fixed-row expanders.
+
+For the fixed-row ensemble, Lemmas~\ref{lem:row-shell-recurrence} and
+\ref{lem:accumulator-slice-tail} turn
+\eqref{eq:expand-accumulate-first-moment} into the positive formula
+\begin{equation}
+ \boxed{
+ \mu_{\mathrm{EA}}^{\mathrm{row}}(L)
+ =\sum_{r=1}^{k}\binom{k}{r}
+   \sum_{u=0}^{n}\rho_{r,u}Q_{n,L}(u).
+ }
+ \label{eq:row-expand-accumulate-positive-first-moment}
+\end{equation}
+Thus the exact-row calculation requires only hypergeometric probabilities.
+In particular, it avoids the alternating Krawtchouk sum in
+\eqref{eq:row-expander-enumerator} in the message-weight range where direct
+evaluation is most delicate.

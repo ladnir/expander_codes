@@ -1,0 +1,1458 @@
+
+
+\section{Wrapping Convolution}
+
+The nonwrapping convolution can enter the all-zero state after a run of
+$\sigma$ zero outputs.  A sparse input can then leave the convolution inactive
+for a long interval.  Expand--Convolute addresses this event by fixing the tap
+on the oldest state bit to one \cite{EC}.  We call the resulting construction
+the \emph{wrapping convolution}.  With zero initial state, its recurrence is
+\begin{equation}
+ y_i=x_i+y_{i-\sigma}
+     +\sum_{j=1}^{\sigma-1}b_{i,j}y_{i-j},
+ \qquad b_{i,j}\gets\{0,1\}\text{ uniformly},
+ \label{eq:wrapping-recurrence}
+\end{equation}
+where indices at most zero contain zero.  All arithmetic is binary, and the
+random taps are independent across positions.  This definition identifies the
+fixed tap by the state bit it multiplies and therefore does not depend on a tap
+ordering convention.
+
+\subsection{Exact transfer enumerator}
+\label{sec:wrapping-transfer-enumerator}
+
+The same reduced state used for the nonwrapping convolution remains exact.
+State $\ell<\sigma$ means that the output prefix ends in exactly $\ell$ zeros,
+and state $\sigma$ means that its last $\sigma$ outputs are zero.  The only new
+case is $\ell=\sigma-1$.  The feedback state is then
+$10^{\sigma-1}$ in chronological order.  The fixed oldest tap makes the next
+output equal to $1+x_i$.
+
+Let $\mathbf W_\sigma(X,Y)$ be the $(\sigma+1)\times(\sigma+1)$ matrix whose
+rows and columns use the state order $0,\ldots,\sigma$.  Its nonzero entries are
+\begin{align}
+ (\mathbf W_\sigma)_{\ell,0}
+   &=\frac{1+X}{2}Y,
+ &
+ (\mathbf W_\sigma)_{\ell,\ell+1}
+   &=\frac{1+X}{2}
+ &&(0\leq\ell<\sigma-1),
+ \label{eq:wrapping-bivariate-active}\\
+ (\mathbf W_\sigma)_{\sigma-1,0}
+   &=Y,
+ &
+ (\mathbf W_\sigma)_{\sigma-1,\sigma}
+   &=X,
+ \label{eq:wrapping-bivariate-critical}\\
+ (\mathbf W_\sigma)_{\sigma,0}
+   &=XY,
+ &
+ (\mathbf W_\sigma)_{\sigma,\sigma}
+   &=1.
+ \label{eq:wrapping-bivariate-zero}
+\end{align}
+The exponent of $X$ records input weight, and the exponent of $Y$ records
+output weight.
+
+\begin{lemma}[Exact wrapping convolution enumerator]
+\label{lem:wrapping-transfer-enumerator}
+Let $\mathbf e_\sigma$ be the unit column vector for state $\sigma$, and let
+$\mathbf 1$ be the all-one column vector.  For every $u,h\in[0,n]$,
+\begin{equation}
+ \boxed{
+ \enum^{\textsf{wConv}}_{u,h}
+   =[X^uY^h],\mathbf e_\sigma^\mathsf{T}
+     \mathbf W_\sigma(X,Y)^n\mathbf 1.
+ }
+ \label{eq:wrapping-transfer-enumerator}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Suppose first that $\ell<\sigma-1$.  At least one of the $\sigma-1$ state
+bits with a random tap is nonzero.  Their inner product is therefore uniform,
+so the next output is uniform for either input bit.  This gives
+\eqref{eq:wrapping-bivariate-active}.  In state $\sigma-1$, the fixed tap is
+the only active tap.  Input zero produces output one and returns to state zero;
+input one produces output zero and enters state $\sigma$.  This gives
+\eqref{eq:wrapping-bivariate-critical}.  In state $\sigma$, the feedback is
+zero and the output equals the input, which gives
+\eqref{eq:wrapping-bivariate-zero}.  Matrix multiplication concatenates these
+transitions.  The boundary vectors select the zero initial state and sum over
+the final state.  Coefficient extraction proves the claim.
+\end{proof}
+
+For a Bernoulli input with nonzero probability $q$, define
+$\mathbf N_{\sigma,q}(Y)$ by
+\begin{align}
+ (\mathbf N_{\sigma,q})_{\ell,0}
+   &=\frac{Y}{2},
+ &
+ (\mathbf N_{\sigma,q})_{\ell,\ell+1}
+   &=\frac{1}{2}
+ &&(0\leq\ell<\sigma-1),
+ \label{eq:wrapping-message-active}\\
+ (\mathbf N_{\sigma,q})_{\sigma-1,0}
+   &=(1-q)Y,
+ &
+ (\mathbf N_{\sigma,q})_{\sigma-1,\sigma}
+   &=q,
+ \label{eq:wrapping-message-critical}\\
+ (\mathbf N_{\sigma,q})_{\sigma,0}
+   &=qY,
+ &
+ (\mathbf N_{\sigma,q})_{\sigma,\sigma}
+   &=1-q.
+ \label{eq:wrapping-message-zero}
+\end{align}
+
+\begin{theorem}[Exact wrapped Expand--Convolute first moment]
+\label{thm:wrapped-expand-convolute-first-moment}
+Sample $\B\gets\dist^{\mathrm{Ber}}_{k,n,p}$ and an independent wrapping
+convolution $\C$ of memory $\sigma$.  Set $\G:=\B\C$.  For $L\in[0,n]$, let
+\begin{equation}
+ \mu_{\mathrm{wEC}}(L)
+   :=\sum_{r=1}^{k}\binom{k}{r}
+     \sum_{h=0}^{L}[Y^h]\,
+     \mathbf e_\sigma^\mathsf{T}
+     \mathbf N_{\sigma,q_r}(Y)^n\mathbf 1.
+ \label{eq:wrapped-expand-convolute-first-moment}
+\end{equation}
+Then
+\begin{equation}
+ \Pr\left[\exists\xv\neq0:\ \hw{\xv\G}\leq L\right]
+ \leq \mu_{\mathrm{wEC}}(L).
+ \label{eq:wrapped-expand-convolute-failure}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Fix a message of weight $r$.  Its Bernoulli-expander image has independent
+coordinates with nonzero probability $q_r$ by
+Lemma~\ref{lem:bernoulli-expander-enumerator}.  Averaging the three transition
+cases in Lemma~\ref{lem:wrapping-transfer-enumerator} over the input bit gives
+$\mathbf N_{\sigma,q_r}$.  Its low-degree coefficients give the probability
+that this message has output weight at most $L$.  Sum over nonzero messages
+and apply Markov's inequality.
+\end{proof}
+
+For every $z\in(0,1]$, nonnegativity of the coefficients gives the computable
+bound
+\begin{equation}
+ \sum_{h=0}^{L}[Y^h]\,
+ \mathbf e_\sigma^\mathsf{T}\mathbf N_{\sigma,q}(Y)^n\mathbf 1
+ \leq z^{-L}\mathbf e_\sigma^\mathsf{T}
+ \mathbf N_{\sigma,q}(z)^n\mathbf 1.
+ \label{eq:wrapped-expand-convolute-chernoff}
+\end{equation}
+The matrix has only $\sigma+1$ states, including for the wrapping construction.
+Thus the exact enumerator avoids both a $2^\sigma$ full-state calculation and
+the comparison chain used in the earlier analysis.
+
+\subsection{Asymptotic distance}
+\label{sec:wrapped-ec-asymptotic}
+
+The transfer matrix also gives a closed distance theorem.  Let
+$\rho_\sigma(q,z)$ denote the spectral radius of
+$\mathbf N_{\sigma,q}(z)$.  For $q\in(0,1/2]$, define
+\begin{equation}
+ J^{\mathrm{w}}_{\sigma,\delta}(q)
+ :=\sup_{0<z\leq1}
+ \left\{\delta\ln z-\ln\rho_\sigma(q,z)\right\}.
+ \label{eq:wrapped-ec-tail-rate}
+\end{equation}
+The sparse limit depends on
+\begin{equation}
+ I^{\mathrm{w}}_{\sigma,\delta}
+ :=
+ \left(
+  \sqrt{1-2\delta+2^{1-\sigma}\delta}
+  -\sqrt{2^{1-\sigma}\delta}
+ \right)^2.
+ \label{eq:wrapped-ec-sparse-rate}
+\end{equation}
+
+\begin{lemma}[Wrapped-convolution endpoint exponents]
+\label{lem:wrapped-ec-endpoint-exponents}
+Fix an integer $\sigma\geq1$ and $\delta\in(0,1/2)$.  The function
+$J^{\mathrm{w}}_{\sigma,\delta}$ is continuous and strictly positive on
+$(0,1/2]$.  Its endpoint exponents satisfy
+\begin{align}
+ \liminf_{q\downarrow0}
+ \frac{J^{\mathrm{w}}_{\sigma,\delta}(q)}{q}
+ &\geq I^{\mathrm{w}}_{\sigma,\delta},
+ \label{eq:wrapped-ec-sparse-exponent-limit}\\
+ J^{\mathrm{w}}_{\sigma,\delta}(1/2)
+ &=\ln2-\mathsf{h}(\delta).
+ \label{eq:wrapped-ec-dense-exponent}
+\end{align}
+
+Let $H_{n,q}$ be the output weight when the input consists of $n$ independent
+Bernoulli variables with parameter $q$, and the wrapping convolution has
+memory $\sigma$.  For every $\epsilon>0$, there are constants $q_0>0$ and
+$K<\infty$ such that
+\begin{equation}
+ \Pr[H_{n,q}\leq\lfloor\delta n\rfloor]
+ \leq K\exp\left(
+  -nq\bigl(I^{\mathrm{w}}_{\sigma,\delta}-\epsilon\bigr)
+ \right)
+ \label{eq:wrapped-ec-uniform-sparse-tail}
+\end{equation}
+for every $n\geq1$ and $q\in(0,q_0]$.  For every $q_*>0$, there are constants
+$K_*,j_*>0$ such that
+\begin{equation}
+ \Pr[H_{n,q}\leq\lfloor\delta n\rfloor]
+ \leq K_*e^{-j_*n}
+ \label{eq:wrapped-ec-uniform-intermediate-tail}
+\end{equation}
+for every $n\geq1$ and $q\in[q_*,1/2]$.
+\end{lemma}
+
+\begin{proof}
+The probability generating function is
+\begin{equation}
+ \Ebb[z^{H_{n,q}}]
+ =\mathbf e_\sigma^\mathsf T
+  \mathbf N_{\sigma,q}(z)^n\mathbf 1.
+ \label{eq:wrapped-ec-output-pgf}
+\end{equation}
+For fixed $q>0$ and $z>0$, the matrix is irreducible.  Perron--Frobenius
+theory therefore bounds \eqref{eq:wrapped-ec-output-pgf} by a constant times
+$\rho_\sigma(q,z)^n$.  Chernoff extraction then gives the exponent in
+\eqref{eq:wrapped-ec-tail-rate}.
+
+We first identify the sparse limit.  At $(q,z)=(0,1)$, the state space has two
+closed classes.  The active class consists of states $0,\ldots,\sigma-1$, and
+the zero class consists of state $\sigma$.  Define
+\begin{equation}
+ c_\sigma:=\frac{1}{2^\sigma-1},
+ \qquad
+ \alpha_\sigma:=\frac{2^{\sigma-1}}{2^\sigma-1}.
+ \label{eq:wrapped-ec-class-parameters}
+\end{equation}
+Within the active class, the stationary probability of state $\ell$ is
+$\alpha_\sigma2^{-\ell}$.  Hence $c_\sigma$ is the stationary probability of
+state $\sigma-1$, and $\alpha_\sigma$ is the mean output weight per step.
+
+Fix $\theta\geq0$ and set $z=e^{-\theta q}$.  First-order perturbation on the
+two-dimensional $1$-eigenspace gives the following rates.  The active class
+enters the zero class at rate $c_\sigma$, and the zero class enters the active
+class at rate one.  The marker adds the killing rate
+$\theta\alpha_\sigma$ within the active class.  The resulting effective matrix
+is
+\begin{equation}
+ G_\sigma(\theta):=
+ \begin{pmatrix}
+  -c_\sigma-\theta\alpha_\sigma & c_\sigma\\
+  1 & -1
+ \end{pmatrix}.
+ \label{eq:wrapped-ec-effective-generator}
+\end{equation}
+Indeed, let the right basis consist of the indicators of the two closed
+classes, and let the left basis consist of their stationary distributions.
+Restricting the first derivative of
+$\mathbf N_{\sigma,q}(e^{-\theta q})$ to these dual bases gives
+\eqref{eq:wrapped-ec-effective-generator}.
+Its rows index the active and zero classes.  The larger eigenvalue is
+\begin{equation}
+ g_\sigma(\theta)
+ =-\frac{1+c_\sigma+\theta\alpha_\sigma}{2}
+ +\frac{
+  \sqrt{(1-c_\sigma-\theta\alpha_\sigma)^2+4c_\sigma}
+ }{2}.
+ \label{eq:wrapped-ec-effective-eigenvalue}
+\end{equation}
+Consequently,
+\begin{equation}
+ \ln\rho_\sigma(q,e^{-\theta q})
+ =qg_\sigma(\theta)+O(q^2).
+ \label{eq:wrapped-ec-sparse-spectral-expansion}
+\end{equation}
+Substitution in \eqref{eq:wrapped-ec-tail-rate} yields
+\begin{equation}
+ \liminf_{q\downarrow0}
+ \frac{J^{\mathrm{w}}_{\sigma,\delta}(q)}{q}
+ \geq
+ \sup_{\theta\geq0}
+ \{-\delta\theta-g_\sigma(\theta)\}.
+ \label{eq:wrapped-ec-effective-optimization}
+\end{equation}
+Set $x:=\delta/\alpha_\sigma$.  Since $\delta<1/2$, the supremum equals
+\begin{equation}
+ \left(\sqrt{1-x}-\sqrt{c_\sigma x}\right)^2
+ =I^{\mathrm{w}}_{\sigma,\delta}.
+ \label{eq:wrapped-ec-effective-rate}
+\end{equation}
+This proves \eqref{eq:wrapped-ec-sparse-exponent-limit}.
+
+The maximizing $\theta$ in \eqref{eq:wrapped-ec-effective-optimization} is
+positive.  The Perron vector for
+$\mathbf N_{\sigma,q}(e^{-\theta q})$ converges to the positive Perron vector
+of \eqref{eq:wrapped-ec-effective-generator}, lifted constantly over each
+closed class.  Its largest and smallest coordinates therefore have a bounded
+ratio for all sufficiently small $q$.  Applying the componentwise
+Perron-vector bound to \eqref{eq:wrapped-ec-output-pgf}, and then using
+\eqref{eq:wrapped-ec-sparse-spectral-expansion}, proves
+\eqref{eq:wrapped-ec-uniform-sparse-tail}.
+
+It remains to treat parameters bounded away from zero.  At $z=1$,
+$\mathbf N_{\sigma,q}(1)$ is stochastic.  Its stationary probabilities obey
+\begin{equation}
+ \pi_\ell=\pi_0 2^{-\ell}\quad(1\leq\ell<\sigma),
+ \qquad
+ \pi_\sigma=\pi_{\sigma-1},
+ \qquad
+ \pi_0=\frac12.
+ \label{eq:wrapped-ec-stationary-law}
+\end{equation}
+The derivative of $\ln\rho_\sigma(q,z)$ with respect to $\ln z$ at $z=1$ is
+therefore $1/2$.  Since $\delta<1/2$, a marker below one makes the objective
+in \eqref{eq:wrapped-ec-tail-rate} positive.  Continuity follows from
+Perron--Frobenius theory and compact restriction of the marker.  A finite
+cover of $q\in[q_*,1/2]$ then proves
+\eqref{eq:wrapped-ec-uniform-intermediate-tail}.
+
+Finally, every row of $\mathbf N_{\sigma,1/2}(z)$ sums to $(1+z)/2$.
+Thus $\rho_\sigma(1/2,z)=(1+z)/2$.  Optimizing over $z$ gives
+\eqref{eq:wrapped-ec-dense-exponent}.
+\end{proof}
+
+\begin{theorem}[Binary wrapped Expand--Convolute distance]
+\label{thm:wrapped-ec-linear-distance}
+Fix an integer $\sigma\geq1$.  Let $k=k(n)$ satisfy $k/n\to R$ for a constant
+$R\in(0,1)$.  Sample $\B\gets\dist^{\mathrm{Ber}}_{k,n,p_n}$ with
+\begin{equation}
+ p_n=C\frac{\ln n}{n}
+ \label{eq:wrapped-ec-density}
+\end{equation}
+for a constant $C>0$.  Independently sample a wrapping convolution $\C$ of
+memory $\sigma$.  Fix $\delta\in(0,1/2)$.  If
+\begin{align}
+ C I^{\mathrm{w}}_{\sigma,\delta}&>1,
+ \label{eq:wrapped-ec-sparse-condition}\\
+ \mathsf{h}(\delta)&<(1-R)\ln2,
+ \label{eq:wrapped-ec-gv-condition}
+\end{align}
+then
+\begin{equation}
+ \Pr_{\B,\C}\left[
+  \min_{\xv\in\Fbb_2^k\setminus\{0\}}
+  \hw{\xv\B\C}\leq\lfloor\delta n\rfloor
+ \right]=o(1).
+ \label{eq:wrapped-ec-linear-distance-conclusion}
+\end{equation}
+In particular, with probability $1-o(1)$, the sampled generator is injective
+and its code has relative minimum distance greater than $\delta$.
+\end{theorem}
+
+\begin{proof}
+Write $q_r=(1-(1-2p_n)^r)/2$.  We bound the exact first moment in
+\eqref{eq:wrapped-expand-convolute-first-moment} in three message-weight
+ranges.
+
+First consider sparse messages.  Lemma~\ref{lem:wrapped-ec-endpoint-exponents}
+and \eqref{eq:wrapped-ec-sparse-condition} give constants
+$\epsilon>0$ and $a_0>0$ such that
+\begin{equation}
+ \gamma:=
+ C\bigl(I^{\mathrm{w}}_{\sigma,\delta}-\epsilon\bigr)(1-a_0)>1.
+ \label{eq:wrapped-ec-sparse-margin}
+\end{equation}
+We choose $a_0$ small enough that
+\eqref{eq:wrapped-ec-uniform-sparse-tail} applies whenever $rp_n\leq a_0$.
+The bounds
+\begin{equation}
+ q_r\leq rp_n,
+ \qquad
+ q_r\geq rp_n(1-a_0)
+ \label{eq:wrapped-ec-qr-sparse-bounds}
+\end{equation}
+then give
+\begin{equation}
+ \sum_{r\leq a_0/p_n}
+ \binom{k}{r}
+ \Pr[H_{n,q_r}\leq\lfloor\delta n\rfloor]
+ \leq
+ K\sum_{r\geq1}k^r n^{-\gamma r}
+ =o(1).
+ \label{eq:wrapped-ec-sparse-sum}
+\end{equation}
+
+Next consider intermediate weights.  If $rp_n>a_0$, then
+\begin{equation}
+ q_r\geq q_*:=\frac{1-e^{-2a_0}}{2}>0.
+ \label{eq:wrapped-ec-intermediate-q}
+\end{equation}
+Let $j_*>0$ be the uniform exponent from
+\eqref{eq:wrapped-ec-uniform-intermediate-tail}.  Choose
+$\eta\in(0,R/2)$ such that
+\begin{equation}
+ R\mathsf{h}(\eta/R)<j_*.
+ \label{eq:wrapped-ec-intermediate-eta}
+\end{equation}
+The Hamming-ball estimate
+\begin{equation}
+ \sum_{r\leq\eta n}\binom{k}{r}
+ \leq\exp\left(nR\mathsf{h}(\eta/R)+o(n)\right)
+ \label{eq:wrapped-ec-intermediate-count}
+\end{equation}
+shows that the contribution of $a_0/p_n<r\leq\eta n$ is exponentially small.
+
+Finally, suppose that $r>\eta n$.  Uniformly over these weights,
+\begin{equation}
+ 0\leq\frac12-q_r
+ \leq\frac12e^{-2p_nr}
+ \leq\frac12n^{-2C\eta}
+ =o(1).
+ \label{eq:wrapped-ec-dense-q}
+\end{equation}
+Every realized wrapping convolution is an invertible linear map.  The
+preimage of the output Hamming ball therefore has at most
+$\exp(n\mathsf{h}(\delta)+o(n))$ elements.  Since $q_r\leq1/2$, each input word
+has probability at most $(1-q_r)^n$.  Thus every fixed message in this range
+has failure probability at most
+\begin{equation}
+ \exp\left(
+  n\bigl(\mathsf{h}(\delta)-\ln2+o(1)\bigr)
+ \right).
+ \label{eq:wrapped-ec-dense-tail}
+\end{equation}
+There are at most $2^k$ messages.  Condition
+\eqref{eq:wrapped-ec-gv-condition} makes their total contribution $o(1)$.
+All three ranges vanish, which proves
+\eqref{eq:wrapped-ec-linear-distance-conclusion}.
+\end{proof}
+
+For $\sigma=1$, \eqref{eq:wrapped-ec-sparse-rate} equals $I_\delta$ from
+\eqref{eq:ea-sparse-rate}.  Thus the theorem recovers the accumulator density
+condition.  As $\sigma$ tends to infinity,
+$I^{\mathrm{w}}_{\sigma,\delta}$ tends to $1-2\delta$.  At
+$\delta=0.05$ and $\sigma=21$, condition
+\eqref{eq:wrapped-ec-sparse-condition} becomes
+\begin{equation}
+ C>1.111623.
+ \label{eq:wrapped-ec-delta-five-density}
+\end{equation}
+For $n=5\mathbin{\cdot}2^{20}$, this threshold corresponds to expected
+Bernoulli row weight greater than $17.20$.  The dense condition remains the
+binary Gilbert--Varshamov condition.
+
+For comparison, the nonwrapping theorem of
+\cite[Theorem~3]{EC} requires memory proportional to $\log n$ and imposes
+\begin{equation}
+ C>\frac{2}{(20/41-\delta)^2},
+ \qquad
+ R<
+ \frac{e-1}{(e+1)\ln2}(20/41-\delta)^2.
+ \label{eq:wrapped-ec-prior-asymptotic-conditions}
+\end{equation}
+At $\delta=0.05$, these conditions require $C>10.4344$ and $R<0.1278$.
+The new wrapping theorem instead requires $C>1.111623$ for memory $21$ and
+permits every $R<0.7136$.  The latter rate is the binary
+Gilbert--Varshamov threshold at this distance.
+
+The fixed-memory wrapping tables in \cite[Appendix~A.1]{EC} use a comparison
+with the nonwrapping chain.  The paper states that its small-memory calculation
+assumes the conjectural extension of its Lemma~4.  Theorem
+\ref{thm:wrapped-ec-linear-distance} analyzes the wrapping transfer matrix
+directly.  It therefore gives an unconditional fixed-memory statement.
+
+The same transfer matrix composes with the exact-row expander without an
+interleaver.  Define the wrapping slice tail
+\begin{equation}
+ Q^{\textsf{wConv}}_{n,L}(u)
+ :=\frac{1}{\binom{n}{u}}
+   \sum_{h=0}^{L}[X^uY^h]\,
+   \mathbf e_\sigma^\mathsf{T}
+   \mathbf W_\sigma(X,Y)^n\mathbf 1.
+ \label{eq:wrapping-slice-tail}
+\end{equation}
+Lemma~\ref{lem:exchangeable-serial-composition} and the positive shell
+recurrence in \eqref{eq:row-shell-recurrence} give
+\begin{equation}
+ \boxed{
+ \mu_{\mathrm{wEC}}^{\mathrm{row}}(L)
+ =\sum_{r=1}^{k}\binom{k}{r}
+   \sum_{u=0}^{n}\rho_{r,u}
+   Q^{\textsf{wConv}}_{n,L}(u).
+ }
+ \label{eq:row-wrapped-expand-convolute-first-moment}
+\end{equation}
+This identity is exact and contains only nonnegative terms.  For positive
+markers $a$ and $z\leq1$, its slice tail satisfies
+\begin{equation}
+ Q^{\textsf{wConv}}_{n,L}(u)
+ \leq
+ \frac{a^{-u}z^{-L}}{\binom{n}{u}}
+ \mathbf e_\sigma^\mathsf{T}
+ \mathbf W_\sigma(a,z)^n\mathbf 1.
+ \label{eq:wrapping-slice-chernoff}
+\end{equation}
+The input marker extracts the shell, and the output marker extracts the lower
+tail.  This two-marker bound is the direct interface between the fixed-row
+expander and the wrapped convolution.
+
+The region-stratified left-regular ensemble has a different symmetry: it is
+exchangeable within each region, not across all $n$ coordinates.  The
+convolution state must therefore be retained between regions.  Define the
+matrix-valued slice enumerator
+\begin{equation}
+ \mathbf S_{\ell,u}(Y)
+ :=\frac{1}{\binom{\ell}{u}}[X^u]\,
+      \mathbf W_\sigma(X,Y)^\ell
+ \label{eq:wrapping-region-slice-matrix}
+\end{equation}
+and, for a message of weight $r$, define
+\begin{equation}
+ \mathbf R_{\ell,r}(Y)
+ :=\sum_{u=0}^{\ell}\rho^{(\ell)}_{r,u}
+      \mathbf S_{\ell,u}(Y).
+ \label{eq:wrapping-regular-region-matrix}
+\end{equation}
+
+\begin{theorem}[Exact left-regular wrapped-EC first moment]
+\label{thm:wrapping-regular-first-moment}
+Assume that $n=d\ell$.  Sample
+$\B\gets\dist^{\mathrm{reg}}_{k,n,d}$ and an independent wrapping convolution
+$\C$ of memory $\sigma$, and set $\G:=\B\C$.  Then the expected number of
+nonzero messages whose encoding has weight at most $L$ is
+\begin{equation}
+ \boxed{
+ \mu_{\mathrm{wEC}}^{\mathrm{reg}}(L)
+ =\sum_{r=1}^{k}\binom{k}{r}\sum_{h=0}^{L}[Y^h]\,
+   \mathbf e_\sigma^\mathsf{T}
+   \mathbf R_{\ell,r}(Y)^d\mathbf 1.
+ }
+ \label{eq:wrapping-regular-first-moment}
+\end{equation}
+Consequently,
+\begin{equation}
+ \Pr[\exists\xv\ne0:\ \hw{\xv\G}\leq L]
+ \leq\mu_{\mathrm{wEC}}^{\mathrm{reg}}(L).
+ \label{eq:wrapping-regular-failure}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Fix a message of weight $r$.  Lemma
+\ref{lem:region-left-regular-shell-law} makes its input in one region a mixture
+of uniform Hamming slices.  Lemma~\ref{lem:wrapping-transfer-enumerator}, with
+specified initial and final states, shows that its averaged transfer matrix is
+\eqref{eq:wrapping-regular-region-matrix}.  Inputs and convolution taps are
+independent across regions.  Matrix multiplication retains the convolution
+state at each regional boundary, so the $d$ regions give
+$\mathbf R_{\ell,r}(Y)^d$.  Extract the lower output-weight tail, sum over
+messages, and apply Markov's inequality.
+\end{proof}
+
+The exact matrix coefficient in
+\eqref{eq:wrapping-regular-region-matrix} is practical for small message
+weights.  Lemma~\ref{lem:regular-poisson-comparison} gives a simpler
+all-weight bound.
+
+\begin{lemma}[Poissonized left-regular transfer bound]
+\label{lem:wrapping-regular-poisson-bound}
+For every $r\geq1$ and $z\in(0,1]$,
+\begin{equation}
+ \Ebb\!\left[z^{\hw{\xv\B\C}}\right]
+ \leq
+ \gamma_r^d\,
+ \mathbf e_\sigma^\mathsf{T}
+ \mathbf N_{\sigma,q^{\mathrm{reg}}_r}(z)^n\mathbf 1
+ \label{eq:wrapping-regular-poisson-mgf}
+\end{equation}
+for each fixed weight-$r$ message $\xv$.  Hence
+\begin{equation}
+ \Pr[\exists\xv\ne0:\ \hw{\xv\B\C}\leq L]
+ \leq
+ \sum_{r=1}^{k}\binom{k}{r}\gamma_r^d z^{-L}
+ \mathbf e_\sigma^\mathsf{T}
+ \mathbf N_{\sigma,q^{\mathrm{reg}}_r}(z)^n\mathbf 1.
+ \label{eq:wrapping-regular-poisson-first-moment}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Average $z^{\hw{\yv\C}}$ over the independent convolution to obtain a
+nonnegative function of $\yv$.  Apply Lemma~\ref{lem:regular-poisson-comparison}
+to this function, then use the Bernoulli-input transfer matrix from
+\eqref{eq:wrapping-message-active}--\eqref{eq:wrapping-message-zero}.  The
+lower-tail moment bound and a union bound over messages give
+\eqref{eq:wrapping-regular-poisson-first-moment}.
+\end{proof}
+
+Stirling's formula gives $\gamma_r=\Theta(\sqrt r)$.  Thus the comparison
+penalty is polynomial in $r$ for fixed left degree $d$.  In contrast, obtaining
+an exact-weight row by conditioning every Bernoulli row separately incurs a
+constant penalty once for each selected message row.  The regional
+construction is therefore especially useful in the intermediate-weight part
+of a distance proof.
+
+For dense messages, a direct point-mass bound avoids the Poisson conditioning
+penalty.  Let $V_n(L):=\sum_{h=0}^{L}\binom{n}{h}$.
+
+\begin{lemma}[Dense left-regular point-mass bound]
+\label{lem:wrapping-regular-dense-bound}
+Assume that $n=d\ell$.  For every fixed weight-$r$ message and every invertible
+binary linear map $\C$,
+\begin{equation}
+ \Pr[\hw{\xv\B\C}\leq L]
+ \leq
+ V_n(L)\,2^{d-n}
+ \left(1+e^{-2r/\ell}\right)^n.
+ \label{eq:wrapping-regular-dense-tail}
+\end{equation}
+Consequently, the weight-$r$ first-moment contribution is at most
+\begin{equation}
+ \binom{k}{r}V_n(L)\,2^{d-n}
+ \left(1+e^{-2r/\ell}\right)^n.
+ \label{eq:wrapping-regular-dense-first-moment}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Lemma~\ref{lem:regular-point-mass} bounds every point of the expander image.
+Invertibility makes the preimage under $\C$ of an output Hamming ball have
+cardinality $V_n(L)$.  Multiplying the point-mass bound by this cardinality proves
+\eqref{eq:wrapping-regular-dense-tail}; multiplying by $\binom{k}{r}$ proves
+\eqref{eq:wrapping-regular-dense-first-moment}.
+\end{proof}
+
+The factor $2^d$ records the fixed parity of every region.  The remaining
+mixing overhead is at most
+$n\log_2(1+e^{-2r/\ell})$ bits.  At rate one half and message weight $k/2$,
+this overhead becomes
+\begin{equation}
+ d+n\log_2(1+e^{-d/2}).
+ \label{eq:wrapping-regular-rate-half-overhead}
+\end{equation}
+Thus constant left degree can give a positive relative distance, but a family
+that approaches the GV benchmark requires growing degree.  At finite length,
+\eqref{eq:wrapping-regular-rate-half-overhead} gives a direct way to select the
+degree before running the exact transfer certificate.
+
+The Poissonized bound can cover a contiguous message-weight block with one
+transfer calculation.  For $1\leq s\leq t\leq k/2$, the functions
+$q^{\mathrm{reg}}_r$ and $\gamma_r$ are nondecreasing.  The latter claim
+follows from
+\[
+ \frac{\gamma_{r+1}}{\gamma_r}
+ =e\left(\frac{r}{r+1}\right)^r>1.
+\]
+Moreover,
+$\mathbf N_{\sigma,q}(z)=(1-q)\mathbf W_\sigma(q/(1-q),z)$, and
+$\mathbf W_\sigma(a,z)^n$ has nonnegative coefficients in $a$.  Therefore,
+for every $r\in[s,t]$ and $z\in(0,1]$, the right-hand side of
+\eqref{eq:wrapping-regular-poisson-mgf} is at most
+\begin{equation}
+ \gamma_t^d(1-q^{\mathrm{reg}}_s)^n
+ \mathbf e_\sigma^\mathsf{T}
+ \mathbf W_\sigma\!\left(
+  \frac{q^{\mathrm{reg}}_t}{1-q^{\mathrm{reg}}_t},z
+ \right)^n\mathbf 1.
+ \label{eq:wrapping-regular-uniform-block}
+\end{equation}
+Multiplication by $z^{-L}\sum_{r=s}^t\binom{k}{r}$ gives a valid
+first-moment bound for the whole block.
+
+\begin{theorem}[Certified rate-$1/2$ left-regular bound]
+\label{thm:wrapped-ec-certified-regular-rate-half}
+Set
+\[
+ k:=1{,}048{,}572,
+ \quad d:=28,
+ \quad \ell:=74{,}898,
+ \quad n:=d\ell=2k,
+ \quad L:=230{,}730.
+\]
+Sample $\B\gets\dist^{\mathrm{reg}}_{k,n,d}$ and an independent zero-state
+wrapping convolution $\C$ of memory $9$.  Then
+\begin{equation}
+ \Pr_{\B,\C}[\exists\xv\ne0:\ \hw{\xv\B\C}\leq L]
+ <2.036627\mathbin{\cdot}10^{-7}<2^{-22.2273}.
+ \label{eq:wrapped-ec-certified-regular-rate-half}
+\end{equation}
+The certified relative distance is
+\[
+ \frac{L}{n}=0.1100210572\ldots
+ =0.9999381317\ldots\,\delta_{\mathrm{GV}}(1/2).
+\]
+\end{theorem}
+
+\begin{proof}
+The verifier \path{scripts/regular_ec_certificate.py} evaluates message
+weights $1$ through $10$ using the normalized regional slice matrices in
+\eqref{eq:wrapping-region-slice-matrix}.  Their total contribution is below
+$1.113280\mathbin{\cdot}10^{-35}$.  It covers weights $11$ through
+$k/4-1$ with $23$ Poissonized transfer blocks from Lemma
+\ref{lem:wrapping-regular-poisson-bound}; their total contribution is below
+$3.146936\mathbin{\cdot}10^{-12}$.  Finally, it applies Lemma
+\ref{lem:wrapping-regular-dense-bound} in $3072$ positive blocks of width at
+most $256$.  Their contribution is below
+$2.036595\mathbin{\cdot}10^{-7}$.  The verifier parses every selected marker
+as a fixed decimal and evaluates all three regimes with outward-rounded Arb
+balls at $192$-bit precision.  Summing them proves
+\eqref{eq:wrapped-ec-certified-regular-rate-half}.
+\end{proof}
+
+At essentially the same length, the memory-$9$ Bernoulli profile in Theorem
+\ref{thm:wrapped-ec-certified-rate-half-gv} has expected row weight $42.2127$
+and cutoff $230{,}741$.  The left-regular profile replaces that random row
+weight by exactly $28$, a reduction of $33.67\%$, while losing $11$ output
+weight units.  Its distance remains within $14.276$ output-weight units of the
+binary GV shell.  This comparison measures expander sparsity; an encoder-cost
+comparison must also account for the regional sampling and transpose.
+
+The intermediate-weight certificate uses one transfer bound for a contiguous
+range of message weights.  Set $p:=d/n$ and let $q_r$ be defined by
+\eqref{eq:bernoulli-expander-parity}.  Write
+\begin{equation}
+ F_\sigma(a,z):=
+ \mathbf e_\sigma^\mathsf{T}\mathbf W_\sigma(a,z)^n\mathbf 1.
+ \label{eq:wrapping-bivariate-transform}
+\end{equation}
+
+\begin{lemma}[Uniform wrapped-EC block bound]
+\label{lem:wrapping-uniform-block}
+Fix integers $1\leq\ell\leq h\leq k/2$ and $z\in(0,1]$.  For every
+$r\in[\ell,h]$, a Bernoulli expander of density $p$ followed by an independent
+wrapping convolution satisfies
+\begin{equation}
+ \Pr[\hw{\xv\B\C}\leq L]
+ \leq z^{-L}(1-q_\ell)^n
+ F_\sigma\!\left(\frac{q_h}{1-q_h},z\right)
+ \label{eq:wrapping-uniform-block-tail}
+\end{equation}
+for each fixed message $\xv$ of weight $r$.  Consequently, the exact-row
+first-moment contribution of all such messages is at most
+\begin{equation}
+ \vartheta_{n,d}^{-h}
+ \left(\sum_{r=\ell}^{h}\binom{k}{r}\right)
+ z^{-L}(1-q_\ell)^n
+ F_\sigma\!\left(\frac{q_h}{1-q_h},z\right),
+ \label{eq:wrapping-uniform-exact-row-block}
+\end{equation}
+where $\vartheta_{n,d}$ is defined in
+\eqref{eq:exact-row-conditioning-probability}.
+\end{lemma}
+
+\begin{proof}
+Fix $r\in[\ell,h]$ and set $a_r:=q_r/(1-q_r)$.  Averaging the input marker in
+Lemma~\ref{lem:wrapping-transfer-enumerator} over independent Bernoulli
+coordinates gives
+\[
+ \Ebb[z^{\hw{\xv\B\C}}]=(1-q_r)^nF_\sigma(a_r,z).
+\]
+The sequence $q_r$ is nondecreasing.  The polynomial $F_\sigma(a,z)$ has
+nonnegative coefficients in $a$.  Hence
+\[
+ (1-q_r)^nF_\sigma(a_r,z)
+ \leq(1-q_\ell)^nF_\sigma(a_h,z).
+\]
+The lower-tail moment bound proves
+\eqref{eq:wrapping-uniform-block-tail}.  Apply
+Lemma~\ref{lem:exact-row-conditioning} to each message.  Its conditioning
+penalty is at most $\vartheta_{n,d}^{-h}$.  Summing over the block proves
+\eqref{eq:wrapping-uniform-exact-row-block}.
+\end{proof}
+
+\begin{theorem}[Certified exact-row wrapped-EC bound]
+\label{thm:wrapped-ec-certified-exact-row}
+Let $(s,d,U,b)$ be any row of the following table, where $b$ is a certified
+lower bound on $-\log_2 U$.
+\[
+\begin{array}{c|c|c|c}
+s&d&U&b\\ \hline
+20&15&5.160307473\mathbin{\cdot}10^{-7}&20.886039\\
+25&17&4.259825504\mathbin{\cdot}10^{-7}&21.162702\\
+30&20&4.830790936\mathbin{\cdot}10^{-8}&24.303165
+\end{array}
+\]
+Set $k:=2^s$, $n:=5k$, $L:=n/20$, and $\sigma:=21$.  Independently sample
+\[
+ \B\gets\dist^{\mathrm{row}}_{k,n,d}
+ \quad\text{and a wrapping convolution }\C\text{ of memory }\sigma.
+\]
+Then
+\begin{equation}
+ \Pr_{\B,\C}\left[
+   \exists\xv\neq0:\ \hw{\xv\B\C}\leq L
+ \right]
+ \leq U<2^{-b}<2^{-20}.
+ \label{eq:wrapped-ec-certified-exact-row-result}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+For $s=20,25,30$, respectively, the Arb verifier evaluates message weights
+through $59$, $240$, and $529$ with the positive shell recurrence and
+\eqref{eq:wrapping-slice-chernoff}.  It checks $879$, $4073$, and $5291$
+reachable convolution shells.  The resulting small-weight contributions are
+at most
+\[
+ 4.315211437\mathbin{\cdot}10^{-7},\qquad
+ 1.671977463\mathbin{\cdot}10^{-7},\qquad
+ 7.040348863\mathbin{\cdot}10^{-9}.
+\]
+
+The verifier partitions the remaining weights below $k/4$ into $51$, $86$,
+and $119$ contiguous blocks.  Each block uses a fixed decimal marker in
+\eqref{eq:wrapping-uniform-exact-row-block}.  The three intermediate-weight
+contributions are at most
+\[
+ 8.450960361\mathbin{\cdot}10^{-8},\qquad
+ 2.587848041\mathbin{\cdot}10^{-7},\qquad
+ 4.126756049\mathbin{\cdot}10^{-8}.
+\]
+The dense L2 bound from Lemma~\ref{lem:exact-row-dense} applies from $k/4$
+onward.  Every realized wrapping convolution is invertible, so the preimage of
+the output Hamming ball has the same cardinality.  The three dense
+contributions are below $2^{-60{,}355}$, $2^{-6{,}001{,}120}$, and
+$2^{-350{,}267{,}009}$.
+
+The verifier parses all markers as fixed decimals.  It evaluates matrix
+powers, shell probabilities, conditioning probabilities, and the final sum
+with outward-rounded Arb balls at $192$-bit precision.  Summing the three
+regimes gives the displayed values.  Equation
+\eqref{eq:row-wrapped-expand-convolute-first-moment} and Markov's inequality
+imply \eqref{eq:wrapped-ec-certified-exact-row-result}.
+\end{proof}
+
+\subsection{Finite comparison with the prior EC analysis}
+\label{sec:wrapped-ec-finite-comparison}
+
+We first hold the code ensemble fixed and change only the analysis.  Set
+$k:=2^{20}$, $n:=5k$, $L:=n/20$, and $\sigma:=5$.  For
+$C_0\in\{3,2.5,2.3\}$, set
+\begin{equation}
+ p:=C_0\frac{\ln n}{n}
+ \label{eq:wrapped-ec-comparison-density}
+\end{equation}
+and sample $\B\gets\dist^{\mathrm{Ber}}_{k,n,p}$.  Independently sample a
+wrapping convolution $\C$ of memory $\sigma$, initialized in the zero state.
+These parameters match the nonsystematic, rate-$1/5$, zero-state rows of
+\cite[Table~4]{EC}.
+
+\begin{theorem}[Certified Bernoulli wrapped-EC comparison]
+\label{thm:wrapped-ec-certified-bernoulli-comparison}
+For each row below, the exact-transfer column upper-bounds
+\[
+ \Pr_{\B,\C}\left[
+  \exists\xv\neq0:\ \hw{\xv\B\C}\leq L
+ \right].
+\]
+The final column is a certified lower bound on the corresponding number of
+security bits.
+\[
+\begin{array}{c|c|c|c|c}
+C_0&\Ebb[\text{row weight}]
+ &\text{prior bound}&\text{exact transfer}&\text{bits}\\ \hline
+3.0&46.4171&2.26\mathbin{\cdot}10^{-7}
+ &2.187816572\mathbin{\cdot}10^{-10}&32.089789\\
+2.5&38.6810&1.72\mathbin{\cdot}10^{-5}
+ &9.485867880\mathbin{\cdot}10^{-8}&23.329645\\
+2.3&35.5865&1.73\mathbin{\cdot}10^{-4}
+ &1.124903039\mathbin{\cdot}10^{-6}&19.761768
+\end{array}
+\]
+\end{theorem}
+
+\begin{proof}
+The Arb verifier evaluates message weights $1$ through $32$ individually with
+\eqref{eq:wrapped-expand-convolute-chernoff}.  For
+$C_0=3,2.5,2.3$, the resulting contributions are at most
+\[
+ 1.954065032\mathbin{\cdot}10^{-10},\qquad
+ 9.482273889\mathbin{\cdot}10^{-8},\qquad
+ 1.124788945\mathbin{\cdot}10^{-6}.
+\]
+The verifier covers the remaining weights below $k/4$ with $9$, $10$, and
+$11$ uniform transfer blocks.  Lemma~\ref{lem:wrapping-uniform-block} gives
+intermediate contributions at most
+\[
+ 2.337515400\mathbin{\cdot}10^{-11},\qquad
+ 3.593990580\mathbin{\cdot}10^{-11},\qquad
+ 1.140938107\mathbin{\cdot}10^{-10}.
+\]
+From $k/4$ onward, invertibility bounds each preimage by the output Hamming
+ball.  The dense contribution is below $10^{-740{,}000}$ in every row.
+
+The verifier parses every marker and each value of $C_0$ as a fixed decimal.
+It evaluates all matrix powers, activation probabilities, and final sums with
+outward-rounded Arb balls at $192$-bit precision.  The exact first moment in
+\eqref{eq:wrapped-expand-convolute-first-moment} and Markov's inequality give
+the displayed bounds.
+\end{proof}
+
+The exact transfer improves the three Table~4 bounds by factors of at least
+$1032$, $181$, and $153$.  Equivalently, it gains $10.01$, $7.50$, and $7.26$
+certified bits.  Table~4 explicitly assumes the conjectural extension of
+Lemma~4 in \cite{EC}; the new calculation does not use that comparison lemma.
+
+Tables~5 and~6 of \cite{EC} initialize the chain with its stationary
+distribution.  That boundary condition changes the sampled construction, so
+those rows are not included in the same-ensemble comparison.  The exact-row
+certificate in Theorem~\ref{thm:wrapped-ec-certified-exact-row} is also a
+different design point.  At $k=2^{20}$, it replaces expected Bernoulli row
+weight $46.4171$ and memory $5$ by exact row weight $15$ and memory $21$.
+Its failure bound remains below $2^{-20}$.  This comparison moves work from
+the expander to the convolution; it is not by itself an encoding-time
+comparison.
+
+\subsection{Finite approach to the Gilbert--Varshamov distance}
+\label{sec:wrapped-ec-finite-gv}
+
+The asymptotic dense-weight condition in
+Theorem~\ref{thm:wrapped-ec-linear-distance} is the binary
+Gilbert--Varshamov condition.  A finite certificate must also retain the
+subexponential factors and the residual bias of the expander output.  The
+following bound keeps both effects without evaluating additional transfer
+matrices.
+
+For integers $0\leq t<N/2$, define the binary Hamming-ball volume
+\[
+ V_N(t):=\sum_{j=0}^{t}\binom Nj.
+\]
+
+\begin{lemma}[Dense blocks for wrapped EC]
+\label{lem:wrapped-ec-dense-block}
+Fix $1\leq\ell\leq h\leq k$ and let
+\[
+ \mathcal X_{\ell,h}
+ :=\{\xv\in\{0,1\}^k:\ell\leq\hw{\xv}\leq h\}.
+\]
+For the Bernoulli wrapped-EC ensemble of
+Theorem~\ref{thm:wrapped-expand-convolute-first-moment},
+\begin{equation}
+ \sum_{\xv\in\mathcal X_{\ell,h}}
+ \Pr_{\B,\C}[\hw{\xv\B\C}\leq L]
+ \leq
+ |\mathcal X_{\ell,h}|V_n(L)(1-q_\ell)^n.
+ \label{eq:wrapped-ec-dense-block}
+\end{equation}
+Moreover,
+\begin{equation}
+ V_N(t)
+ \leq
+ \binom Nt\frac{N-t+1}{N-2t+1}.
+ \label{eq:hamming-ball-geometric-bound}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Fix $\xv\in\mathcal X_{\ell,h}$ with weight $r$.  The coordinates of
+$\xv\B$ are independent Bernoulli variables with parameter $q_r$.
+Since $q_r\leq1/2$, every vector has probability at most $(1-q_r)^n$.
+Every realized wrapping convolution is invertible.  Conditional on $\C$, the
+preimage of the radius-$L$ output ball therefore has $V_n(L)$ elements.
+The sequence $q_r$ is nondecreasing, so the probability for $\xv$ is at most
+$V_n(L)(1-q_\ell)^n$.  Summing over $\mathcal X_{\ell,h}$ proves
+\eqref{eq:wrapped-ec-dense-block}.
+
+For $j<t$, consecutive binomial coefficients satisfy
+\[
+ \frac{\binom Nj}{\binom N{j+1}}
+ =\frac{j+1}{N-j}
+ \leq\frac{t}{N-t+1}.
+\]
+The geometric-series bound gives
+\eqref{eq:hamming-ball-geometric-bound}.
+\end{proof}
+
+Let $\delta_{\mathrm{GV}}(R)$ be the solution in $(0,1/2)$ to
+\begin{equation}
+ h(\delta_{\mathrm{GV}}(R))=(1-R)\ln2.
+ \label{eq:binary-gv-distance}
+\end{equation}
+At rate $R=1/5$, this value is
+$\delta_{\mathrm{GV}}(1/5)=0.2430038538\ldots$.
+
+\begin{theorem}[Certified finite GV comparison]
+\label{thm:wrapped-ec-certified-finite-gv}
+Set $k:=2^{20}$ and $n:=5k$.  For each row below, set
+$p:=C_0\ln(n)/n$ and use a zero-state wrapping convolution of memory
+$\sigma$.  Independently sample
+\[
+ \B\gets\dist^{\mathrm{Ber}}_{k,n,p}
+ \quad\text{and}\quad \C.
+\]
+The last column gives a certified value $b$ such that
+\begin{equation}
+ \Pr_{\B,\C}\left[
+  \exists\xv\neq0:\ \hw{\xv\B\C}\leq L
+ \right]<2^{-b}.
+ \label{eq:wrapped-ec-finite-gv-result}
+\end{equation}
+\[
+\begin{array}{c|c|c|c|c|c}
+C_0&\sigma&C_0\ln n&L/n
+ &(L/n)/\delta_{\mathrm{GV}}(1/5)&b\\ \hline
+3&5 &46.4171&0.119999886&49.3819\%&20.104148\\
+3&13&46.4171&0.159999847&65.8425\%&20.161525\\
+4&5 &61.8895&0.189999962&78.1880\%&20.280537\\
+4&9 &61.8895&0.233999825&96.2947\%&20.166272\\
+4&13&61.8895&0.241799927&99.5046\%&20.030269\\
+5&9 &77.3619&0.242617607&99.8411\%&29.140327\\
+5&9 &77.3619&0.243002319&99.9994\%&21.320038
+\end{array}
+\]
+\end{theorem}
+
+\begin{proof}
+The six integer cutoffs are
+\[
+ 629145,\quad 838860,\quad 996147,\quad
+ 1226833,\quad 1267728,\quad 1272015,\quad 1274032.
+\]
+The verifier evaluates message weights $1$ through $32$ with the exact
+transfer matrix.  It covers weights $33$ through $k/4-1$ with, respectively,
+$15$, $14$, $21$, $22$, $21$, $21$, and $21$ uniform transfer blocks.
+
+For the dense range, the verifier applies
+Lemma~\ref{lem:wrapped-ec-dense-block} to ten blocks.  The block endpoints are
+\[
+ \frac{k}{4},\frac{3k}{10},\frac{7k}{20},\frac{2k}{5},
+ \frac{9k}{20},\frac{47k}{100},\frac{12k}{25},
+ \frac{49k}{100},\frac{99k}{200},\frac{k}{2},k+1,
+\]
+with integer floors where necessary.  Equation
+\eqref{eq:hamming-ball-geometric-bound} bounds both the message counts and the
+output ball.  The first six dense contributions are below $10^{-1002}$.
+The final dense contribution is at most
+$3.800902566\mathbin{\cdot}10^{-7}$.
+
+The resulting all-weight bounds, in table order, are
+\[
+\begin{split}
+ &8.872546060\mathbin{\cdot}10^{-7},\quad
+  8.526605175\mathbin{\cdot}10^{-7},\quad
+  7.851452089\mathbin{\cdot}10^{-7},\\
+ &8.498595923\mathbin{\cdot}10^{-7},\quad
+  9.338732260\mathbin{\cdot}10^{-7},\\
+ &1.690003011\mathbin{\cdot}10^{-9},\quad
+  3.819697244\mathbin{\cdot}10^{-7}.
+\end{split}
+\]
+The verifier parses each marker as a fixed decimal and uses outward-rounded
+Arb balls at $192$-bit precision.  The first-moment bound in
+Theorem~\ref{thm:wrapped-expand-convolute-first-moment} proves
+\eqref{eq:wrapped-ec-finite-gv-result}.
+\end{proof}
+
+The last row is within $0.000001535$ of the binary GV distance.  Equivalently,
+its integer cutoff is $8.0451$ below $n\delta_{\mathrm{GV}}(1/5)$.  It reaches
+$99.99937\%$ of the asymptotic benchmark with expected expander row weight
+$77.3619$ and convolutional memory $9$.  The preceding row uses the same code
+ensemble and retains $29.140327$ bits at a slightly smaller distance.  The GV
+value is not a finite-length upper bound; the comparison measures the
+remaining gap to the standard asymptotic random-linear-code benchmark.
+
+\subsubsection{Rate one half.}
+
+At rate $1/2$, the binary GV distance is
+\[
+ \delta_{\mathrm{GV}}(1/2)=0.1100278644\ldots.
+\]
+The next theorem gives four cost profiles at this rate.  The table orders the
+profiles by memory; the expected expander row weight falls as memory grows.
+
+\begin{theorem}[Certified rate-$1/2$ GV comparison]
+\label{thm:wrapped-ec-certified-rate-half-gv}
+Set $k:=2^{20}$, $n:=2k$, and $L:=230741$.  For each row below, set
+$p:=C_0\ln(n)/n$ and use a zero-state wrapping convolution of memory
+$\sigma$.  Independently sample
+\[
+ \B\gets\dist^{\mathrm{Ber}}_{k,n,p}
+ \quad\text{and}\quad \C.
+\]
+Then
+\[
+ \Pr_{\B,\C}\left[
+  \exists\xv\neq0:\ \hw{\xv\B\C}\leq L
+ \right]\leq U<2^{-b}.
+\]
+\[
+\begin{array}{c|c|c|c|c}
+C_0&\sigma&C_0\ln n&U&b\\ \hline
+3.15&5&45.8517&7.637727109\mathbin{\cdot}10^{-7}&20.320353\\
+3&7&43.6683&5.278295360\mathbin{\cdot}10^{-7}&20.853424\\
+2.9&9&42.2127&5.560776634\mathbin{\cdot}10^{-7}&20.778210\\
+2.85&13&41.4849&5.971032143\mathbin{\cdot}10^{-7}&20.675516
+\end{array}
+\]
+Both rows certify relative distance
+\[
+ \frac{L}{n}=0.1100258827\ldots
+ =0.9999819889\ldots\,\delta_{\mathrm{GV}}(1/2).
+\]
+\end{theorem}
+
+\begin{proof}
+The verifier evaluates message weights $1$ through $32$ with the exact
+transfer matrix.  In table order, these contributions are at most
+\[
+\begin{split}
+ &4.248414142\mathbin{\cdot}10^{-7},\quad
+  1.884923212\mathbin{\cdot}10^{-7},\\
+ &2.164751311\mathbin{\cdot}10^{-7},\quad
+  2.574039056\mathbin{\cdot}10^{-7}.
+\end{split}
+\]
+The four transfer regimes end at weights $26362$, $26362$, $27461$, and
+$28045$.  They use $11$, $10$, $9$, and $9$ uniform blocks.  Their
+contributions are at most
+\[
+\begin{split}
+ &8.192194653\mathbin{\cdot}10^{-11},\quad
+  3.128007837\mathbin{\cdot}10^{-10},\\
+ &2.989483906\mathbin{\cdot}10^{-10},\quad
+  1.589442947\mathbin{\cdot}10^{-10}.
+\end{split}
+\]
+
+After each transfer regime, the verifier applies
+Lemma~\ref{lem:wrapped-ec-dense-block}.  Its positive point-mass partitions
+contain $12$, $17$, $17$, and $17$ blocks.  Equation
+\eqref{eq:hamming-ball-geometric-bound} gives dense contributions at most
+\[
+\begin{split}
+ &3.388493748\mathbin{\cdot}10^{-7},\quad
+  3.390244141\mathbin{\cdot}10^{-7},\\
+ &3.393035839\mathbin{\cdot}10^{-7},\quad
+  3.395403644\mathbin{\cdot}10^{-7}.
+\end{split}
+\]
+The verifier checks all transfer markers, block endpoints, Hamming-ball
+bounds, and final sums with outward-rounded Arb balls at $192$-bit precision.
+Summing the three regimes proves the stated bounds.
+\end{proof}
+
+The GV shell lies at output weight $230745.156\ldots$.  Thus the certified
+integer cutoff is $4.156$ output-weight units below the asymptotic benchmark.
+At the next integer cutoff, the current dense bound already exceeds the
+$2^{-20}$ target.  Further progress therefore requires a sharper dense
+partition or a different finite-length argument.
+
+\subsection{Legacy combinatorial derivation (draft)}
+
+The remainder of this section records the earlier zone-based derivation for
+comparison.  Lemma~\ref{lem:wrapping-transfer-enumerator} supersedes it as the
+proof-facing enumerator.
+
+Consider the following example with $\sigma = 4$:
+\begin{align*}
+  \xv=&\texttt{ 0\textcolor{blue}{1}\red{0101000}\green{0}\red{101}\textcolor{blue}{1}00\textcolor{blue}{1}\red{00100100101}}\\
+  \yv=&\texttt{ 0\olive{1001}\green{1000}\textcolor{blue}{10000}00\olive{11001110}\textcolor{violet}{1000}}\\
+  \text{ on?}=&\texttt{ 0111111111111000111111111111}%\\
+  %v=&\texttt{ 000000001000000000000000}\\
+  %t_0=&\texttt{ 001100000000000000110001}
+\end{align*}
+
+Compared to the prior section, we define the zones of the pattern differently:
+\begin{itemize}
+
+  \item \textbf{Deadzones:} As before, deadzones are runs of zeros and occur at the very beginning or after terminations. Deadzones are aligned in $\xv$ and $\yv$ and indicate when the convolution is off. Deadzones may be empty.
+
+  \item \textbf{Terminations:} This is the sequence $10^{\sigma}$ in $\yv$ and must have a \blue{1} in $\xv$ that is aligned with the last \blue{0} in $\yv$. For example, $\sigma=4$ we have
+    \begin{align*}
+      \xv=& \texttt{?????\blue{1}?}\\
+      \yv=&\texttt{?\blue{10000}?}
+    \end{align*}
+    After this, the convolution transitions into a deadzone consisting of $\texttt{0}^*$.
+
+  \item \textbf{Near-terminations:} This is the sequence of $\green{10}^{\sigma-1}$ in $\yv$ with the constraint that it must be followed by a $\texttt{1}$ and this training \texttt{1} in $\yv$ must be aligned with a $\green{0}$ in $\xv$. For example, if $\sigma=4$ we must have
+    \begin{align*}
+      \xv=& \texttt{?????\green{0}?}\\
+      \yv=&\texttt{?\green{1000}1?}
+    \end{align*}
+    We do not count the trailing \texttt{1} in $\yv$ as part of the termination pattern but a constraint on what follows.
+
+  \item \textbf{Input Freezones:} These are sequences of \texttt{\red{0}}s and \texttt{\red{1}}s in $\xv$ when the convolution is on. In $x$, freezones start after the first  \texttt{\textcolor{blue}{1}} and end in \texttt{\textcolor{blue}{1}}.
+
+  \item \textbf{Output Freezones:} In $y$, freezones can contain up to $\sigma-2$ consecutive \texttt{\olive{0}}s as they would otherwise turn into either a termination or a near-termination.
+
+  \item \textbf{Trailzone:} This is the sequence $\violet{10}^{\sigma-1}$ at the very end of $\yv$. It is similar to a near termination but since it is at the end, it does not result in the corresponding requirement of having a \green{0} in $\xv$. As a result, we must make it a special case.
+\end{itemize}
+
+\subsection{Peter's Wrapping}
+
+\paragraph{Additonal Constraints.}
+We will add the following constraints to the pattern:
+\begin{itemize}
+  \item There are exactly $r$ run transitions, where the convolution turns on or off. I.e., $r:=\left|\{i\in [n] \mid \qv_{i}\neq \qv_{i-1} \}\right|$ and $\qv_0:=1,\qv_i:=1$ if $\yv_{i-[\sigma]}\neq0^\sigma$ and 0 otherwise.
+  \item There are exactly $t_0$ output freezone zeros. I.e. $t_0:=\left|\{i \in [n] \mid \yv_i=0,\qv_{i+[\sigma]}=1^\sigma,\}\right|$
+  \item There are exactly $v$ near-termination zones. I.e. $v:=|\{ i \mid \yv_{i+[\sigma+1] = \texttt{\green{10}}^{\sigma}\texttt{\green{1}}}\}|$
+  \item There are exactly $d\in\{0,1\}$ trailzones. Note $r$ being odd implies $d=0$.
+\end{itemize}
+
+Given the values of the constraints, we will then enumerate all $(\xv,\yv,\C)$ that are compatible.
+
+\paragraph{Useful quantities.}
+Let us first define useful quantities that are implied by our constraints.
+\begin{itemize}
+  \item $r_0:=\lfloor r/2\rfloor$ terminations $\blue{10}^\sigma$ in $\yv$. Equivalently, there are $r_0$ runs of deadzones not counting the first one.
+  \item $r_1:=\lceil r/2\rceil$ non-zero runs.
+  \item $z:=n-h-(v+d)(\sigma -1)-r_0\sigma -t_0$  deadzones \texttt{0}s. There are $n-h$ zeros in general, $(v+d)(\sigma -1)$ of them are used for near termiations and trailing zones, $r_0\sigma$ used for terminations, and $t_0$ are used in the output freezone.
+  \item $f_0:=n-w-z-v$ input freezone \red{0}s . There are $n-w$ in general, $z$ used in deadzones and $v$ used in near terminations.
+  \item $f_1:=w-r$ input freezone \red{1}s. There are $w$ ones in general and each of the $r$ run transitions must occure at a \blue{1} in $\xv$.
+  \item $t_1:=h-v-r_0-d$ output freezone $\olive{1}$s. $h$ in general, $v$ are used by near terminations, $r_0$ are used for terminations, and $d$ are used for the trailing zone.
+\end{itemize}
+
+\paragraph{Baseline.}
+
+Let us first count place the $t_1$  output freezone $\olive{1}$s  and the $d$ trailzones $\violet{10}^{\sigma-1}$. There is exactly one way to do this. Our example above with $t_1=7,d=1$ would look like
+\begin{align*}
+  x&=\texttt{?\blue{1}???????????????}\\
+  y&=\texttt{?\olive{1}?\olive{1}?\olive{1}?\olive{1}?\olive{1}?\olive{1}?\olive{1}?\textcolor{violet}{1000}}
+\end{align*}
+
+\paragraph{Near terminations.} Near-terminations can occur before any of the $t_1$ output freezone \texttt{\olive{1}}s or one of the two special cases at the end: (1) before the $d \in \{0,1\}$ trailzones when we finish in an on state, or (2) before the last termination when we finish in a deadzone, i.e. if $1-r_1+r_0=1$. For 2, we only count the position before the last termination as it is not equivalent to being before an output freezone \olive{1}, unlike the other terminations. Each of these configurations results in a different $y$. There are
+$$
+E_1=\mathcal{B}(v,t_1+d+(1-r_1+r_0))
+$$
+different ways of ordering the \olive{1}s, \textcolor{violet}{1000}s and near-terminations. In our example we have
+\begin{align*}
+  x&=\texttt{?\blue{1}???????\green{0}???????????????}\\
+  y&=\texttt{?\olive{1}?\olive{1}?\green{1000}??\olive{1}?\olive{1}?\olive{1}?\olive{1}?\olive{1}?\textcolor{violet}{1000}}
+\end{align*}
+Note that a zero cannot follow a near termination in $\yv$.
+
+\paragraph{Terminations.} There are exactly $r_0$ terminations in general. However, if the convolution ends in the off state, then clearly the last termination must come right before the last deadzone. Therefore, there are $r_1-1$ terminations that are free to be placed, one for each of the $r_1$ times the convolution is on minus the last (because the last run either does not terminate or the last termination is fixed).
+A termination may come before each of the $t_1$ output freezone \olive{1}s or $v$ near terminations $\green{10}^{\sigma-1}$, or at the very end if (1) there is a trailzone, i.e. $d=1$, or (2) the convolution is in the off state at the end, i.e. $1-r_1+r_0=1$. Therefore, there are
+$$
+E_2=\ballsBins(r_1-1, t_1+v+d+(1-r_1+r_0))
+$$
+such different ways of ordering the terminations for each ordering of the \texttt{\olive{1}}s and near-terminations. In our example, we have
+\begin{align*}
+  x&=\texttt{?\blue{1}???????\green{0}???\blue{1}?\blue{1}?????????????}\\
+  y&=\texttt{?\olive{1}?\olive{1}?\green{1000}\blue{10000}?\olive{1}?\olive{1}?\olive{1}?\olive{1}?\olive{1}?\textcolor{violet}{1000}}
+\end{align*}
+All \texttt{1}s in the output are now placed and therefore in our example we can eliminate the \texttt{?} after the near termination, as we know a zero can not follow it. Additionally, the start of each non-zero run in $\xv$ is now known and is depicted above with a \blue{1}.
+
+\paragraph{Deadzones.}
+The $r_0+1$ deadzones can only occur at the beginning or after terminations and each way results in a different $y$. There are $z$ zeros in the deadzones. Therefore, there are
+$$
+E_3=\mathcal{B}(z,r_0+1)
+$$
+such different ways of ordering the \texttt{0}s in the deadzones for each ordering of the \texttt{\olive{1}}s, near-terminations, and terminations. In our example we have
+\begin{align*}
+  x&=\texttt{0\blue{1}???????\green{0}???\blue{1}00\blue{1}?????????????}\\
+  y&=\texttt{0\olive{1}?\olive{1}?\green{1000}\blue{10000}00\olive{1}?\olive{1}?\olive{1}?\olive{1}?\olive{1}?\textcolor{violet}{1000}}
+\end{align*}
+
+\paragraph{Freezone output zeros.}
+The $t_0$ output freezone {\olive{0}}s can only come after the $t_1$ output freezone {\olive{1}}s and there can be up to $\sigma-2$ consecutive \olive{0}s at a time. Therefore, there are
+$$
+E_4=N(t_0,t_1,\sigma-2)
+$$ such different ways of ordering the \texttt{\olive{0}}s in the freezones for each ordering of the \texttt{\olive{1}}s, near-terminations, terminations, and \texttt{0}s. In our example we have
+\begin{align*}
+  x&=\texttt{0\blue{1}???????\green{0}???\blue{1}00\blue{1}???????????}\\
+  y&=\texttt{0\olive{1001}\green{1000}\blue{10000}00\olive{11001110}\textcolor{violet}{1000}}
+\end{align*}
+
+\paragraph{Freezone inputs.}
+What remains in the ordering of the $f_0+f_1$ input freezone \texttt{\red{0}}s and \texttt{\red{1}}s. Each ordering results in a different $x$. Therefore, there are
+$$
+E_5=\binom{f_0+f_1}{f_0}
+$$
+such different ways of ordering the \texttt{\red{0}}s of $x$ for each. At this stage, we have also completely determined $x$. In our example we have our final input output string
+\begin{align*}
+  x&=\texttt{0\textcolor{blue}{1}\red{010100}\green{0}\red{0101}\textcolor{blue}{1}00\textcolor{blue}{1}\red{00100100101}}\\
+  y&=\texttt{0\olive{1001}\green{1000}\blue{10000}00\olive{11001110}\textcolor{violet}{1000}}\\
+  G&=\texttt{0011111101111000011111111111}
+\end{align*}
+
+\paragraph{Putting it together.}
+Thus, for fixed values of $n,w,h,r,d,v,t_0$, the number of possible consistent $x$ and $y$ is
+\begin{align*}
+  \enum_{w,h,r,d,v,t_0} &= 2^{-g}E_1E_2E_3E_4E_5 P_{w,h,r,d, v, t_0}
+  %&=2^{-g}\binom{v}{t_1+1} \binom{r'-b}{h-v-r'+b} \binom{z}{r'+1} \binom{f_0+f_1}{f_0} \\
+  %&\quad \left(\sum_{i=0}^{t_1+v}(-1)^{i}\binom{t_1+v}{i}\binom{t_0+t_1+v-i(\sigma-1)-1}{t_1+v-1}\right)
+\end{align*}
+where $g:=f_1+f_0$ is the number of times we assumed the result of the convolution times the non-zero state is equal to some value, i.e. the positions where $G_i=1$ in the example above. $P$ is the bounds check predicate which is defined as
+$$
+P_{w,h,r,d, v, t_0} :=
+\begin{cases}
+  0 & \text{if } z<0 \vee f_0 <0 \vee f_1 <0 \vee t1 < 0 \vee h-r_0-d < 0 \vee\\
+  &\quad  k - r - v - f_0 - f_1 < 0 \vee r_1-r_0 -d < 0\\
+  1 & \text{otherwise }
+\end{cases}
+$$
+Unlike the other enumerator, the bounds check is infact required due to prevent intermidiate counts from going negative. A reparameterization may be possible to avoid this issue.
+
+To obtain the enumerator for fixed values of $n,w,h$, we thus need to sum over all possible values of $r,d,v,t_0$.
+Thus, for fixed values of $n,w,h$, the number of possible consistent $x$ and $y$ is
+$$
+\enum_{w,h} = \sum_{r\geq 0}\sum_{d\in \{0, 1\}}\sum_{v\geq 0}\sum_{t_0\geq 0}\mathbb{E}_{n,w,h,r,d,v,t_0}
+$$
+
+\subsection{Srini's Wrapping}
+
+\noindent Let us first describe what $y$ looks like in general:
+\begin{itemize}
+  \item $y$ may begin with a deadzone.
+  \item $y$ may then contain a mixture of freezones, near-terminations, terminations, and deadzones, subject to the following restrictions:
+    \begin{itemize}
+      \item Deadzones only follow terminations.
+      \item Freezones cannot follow freezones. Also, freezones following a termination or a deadzone must begin with a \texttt{\red{1}}.
+    \end{itemize}
+  \item $y$ may end with a trailzone.
+\end{itemize}
+Based on $y$, $x$ then contains:
+\begin{itemize}
+  \item deadzones corresponding to deadzones in $y$
+  \item freezones corresponding to terminations, near-terminations, freezones and a trailzone in $y$, subject to the following restrictions:
+    \begin{itemize}
+      \item freezones corresponding to terminations in $y$ end in \texttt{\textcolor{blue}{1}}
+      \item freezones corresponding to near-terminations in $y$ end in \texttt{\green{0}}
+      \item freezones corresponding to any sequence following a termination or a deadzone in $y$ begin with \texttt{\textcolor{blue}{1}}
+    \end{itemize}
+\end{itemize}
+
+\noindent We will have the independent variables $n,w,h,r,b,d,v$ which represent:
+\begin{itemize}
+  \item the lengths of $x$ and $y$, $n=28$
+  \item the weight of the input $x$, $w=11$
+  \item the weight of the output $y$, $h=10$
+  \item the number of times the convolution turns on, $r=2$
+  \item the indicator of whether the convolution turned off at the end, $b=0$
+  \item the indicator of whether the convolution ends in a trailzone, $d=1$
+  \item the number of near-terminations, $v=1$
+  \item the number of \texttt{\red{0}}s in freezones in $y$, $t_0=5$
+\end{itemize}
+Using these independent parameters, we can define several others as below:
+\begin{itemize}
+  \item the number of terminations, $r'=r+b-1=1$
+  \item the number of \texttt{0}s in deadzones, $z=n-h-(v+d)(\sigma-1)-r'\sigma-t_0=3$
+  \item the number of \texttt{\red{0}}s in freezones in $x$, $f_0=n-w-z-v=13$
+  \item the number of \texttt{\red{1}}s in freezones in $x$, $f_1=w-r-r'=8$
+  \item the number of \texttt{\red{1}}s in freezones in $y$, $t_1=h-2v-r'-d=6$
+\end{itemize}
+All of the above can be argued and summarized using the table below:
+\begin{center}
+  \begin{tabular}{|c|c|c|}\hline
+    \textbf{Property} & \textbf{Input $x$} & \textbf{Output $y$}  \\\hline
+    \texttt{\red{0}}s & $f_0$ & $t_0$ \\\hline
+    \texttt{\textcolor{blue}{0}}s & $-$ & $r'\sigma$ \\\hline
+    \texttt{\green{0}}s & $v$ & $v(\sigma-1)$ \\\hline
+    \texttt{\textcolor{violet}{0}}s & $-$ & $d(\sigma-1)$ \\\hline
+    \texttt{0}s & $z$ & $z$ \\\hline\hline
+    \texttt{\red{1}}s & $f_1$ & $t_1$ \\\hline
+    \texttt{\textcolor{blue}{1}}s & $r+r'$ & $r'$ \\\hline
+    \texttt{\green{1}}s & $-$ & $2v$ \\\hline
+    \texttt{\textcolor{violet}{1}}s & $-$ & $d$ \\\hline
+    \texttt{1}s & $-$ & $-$ \\\hline
+  \end{tabular}
+\end{center}
+
+\noindent Suppose we fix the values of $n,w,h,r,b,d,v,t_0$. We will now describe how to enumerate over all possible $y$ and $x$ consistent with these values. Firstly, if $d=1$, we place a trailzone at the end of $y$. Conceptually, we will build up the pattern and count the number of options. At this stage, we have placed all \texttt{\textcolor{violet}{0}}s and \texttt{\textcolor{violet}{1}}s of the tailzone in $y$ for which there is exactly one way to do it. With respect to our exmaple, at this point we have
+\begin{align*}
+  x&=\texttt{?????}\\
+  y&=\texttt{?\textcolor{violet}{1000}}
+\end{align*}
+where \texttt{?} denodes an undertermined string.
+
+\paragraph{Freezone output ones.}
+Next, we consider the freezone \texttt{\olive{1}}s in $y$. Given the current containts, these will all appear before the tailzone and there is one way to place them, e.g.
+\begin{align*}
+  x&=\texttt{?\blue{1}???????????????}\\
+  y&=\texttt{?\olive{1}?\olive{1}?\olive{1}?\olive{1}?\olive{1}?\olive{1}?\textcolor{violet}{1000}}
+\end{align*}
+
+\paragraph{Near terminations.} Near-terminations can occur arbitrarily with respect to the \texttt{\olive{1}}s and each way results in a different $y$. There are
+$$
+E_1=\mathcal{B}(v,t_1+1)
+$$
+such different ways of ordering the \texttt{\olive{1}}s and near-terminations. At this stage, we have also placed all output freezone \texttt{\olive{1}}s, near termination \texttt{\green{0}}s and \texttt{\green{1}}s and trailzone \texttt{\textcolor{violet}{0}}s and \texttt{\textcolor{violet}{1}}s in $y$. In our example we have
+\begin{align*}
+  x&=\texttt{?\blue{1}?????\green{0}???????????????}\\
+  y&=\texttt{?\olive{1}?\green{10001}?\olive{1}?\olive{1}?\olive{1}?\olive{1}?\olive{1}?\textcolor{violet}{1000}}
+\end{align*}
+
+\paragraph{Output terminations.}
+Next, consider any fixed ordering of the \texttt{\olive{1}}s and near-terminations in $y$. Terminations can occur \emph{almost} arbitrarily with respect to the \texttt{\olive{1}}s and near-terminations and each way results in a different $y$. The only restriction has to do with $b$. By definition, $b=1$ if and only if there is a termination after the last \texttt{\olive{1}} or near-termination and $d = 0$. Therefore, there are
+$$
+E_2=\mathcal{B}(r'-b,t_1+v+b+d)=\mathcal{B}(r'-b,h-v-r'+b)
+$$
+such different ways of ordering the terminations for each ordering of the \texttt{\olive{1}}s and near-terminations.
+At this stage, we have also placed all \texttt{\textcolor{blue}{0}}s and \texttt{\textcolor{blue}{1}}s in $y$. In out example we have
+\begin{align*}
+  x&=\texttt{?\blue{1}?????\green{0}?????\blue{1}?\blue{1}?????????????}\\
+  y&=\texttt{?\red{1}?\green{10001}?\blue{10000}?\red{1}?\red{1}?\red{1}?\red{1}?\red{1}?\textcolor{violet}{1000}}
+\end{align*}
+
+\paragraph{Deadzones.}
+Next, consider any fixed ordering of the \texttt{\red{1}}s, near-terminations, and terminations in $y$. Deadzones can only occur at the beginning or after terminations and each way results in a different $y$. Therefore, there are
+$$
+E_3=\mathcal{B}(z,r'+1)
+$$
+such different ways of ordering the \texttt{0}s in the deadzones for each ordering of the \texttt{\red{1}}s, near-terminations, and terminations. At this stage, we have also placed all \texttt{0}s in $y$. In our example we have
+\begin{align*}
+  x&=\texttt{0\blue{1}?????\green{0}?????\blue{1}00??????????????}\\
+  y&=\texttt{0\red{1}?\green{10001}?\blue{10000}00\red{1}?\red{1}?\red{1}?\red{1}?\red{1}?\textcolor{violet}{1000}}
+\end{align*}
+
+\paragraph{Freezone output zeros.}
+Next, consider any fixed ordering of the \texttt{\red{1}}s, near-terminations, terminations, and \texttt{0}s in $y$. The \texttt{\red{0}}s can only come after \texttt{\red{1}}s or near-terminations and there can be up to $\sigma-2$ of them consecutively and each way results in a different $y$. Therefore, there are$$E_4=N(t_0,t_1+v,\sigma-2)$$such different ways of ordering the \texttt{\red{0}}s in the freezones for each ordering of the \texttt{\red{1}}s, near-terminations, terminations, and \texttt{0}s. At this stage, we have also placed all \texttt{\red{0}}s in $y$ and hence completely determined it. In our example we have
+\begin{align*}
+  x&=\texttt{0\blue{1}??????\green{0}????\blue{1}00????????????}\\
+  y&=\texttt{0\red{100}\green{10001}\blue{10000}00\red{11001110}\textcolor{violet}{1000}}
+\end{align*}
+
+\paragraph{Freezone inputs.}
+Next, consider any fixed $y$. Corresponding to $y$, we can place all the \texttt{\green{0}}s, \texttt{0}s, and \texttt{\textcolor{blue}{1}}s in $x$. The remaining spots can be filled in arbitrarily with \texttt{\red{0}}s and \texttt{\red{1}}s and each way results in a different $x$. Therefore, there are
+$$
+E_5=\binom{f_0+f_1}{f_0}
+$$
+such different ways of ordering the \texttt{\red{0}}s of $x$ for each $y$. At this stage, we have also completely determined $x$. In our example we have our final input output string
+\begin{align*}
+  x&=\texttt{0\textcolor{blue}{1}\red{010100}\green{0}\red{0101}\textcolor{blue}{1}00\textcolor{blue}{1}\red{00100100101}}\\
+  y&=\texttt{0\red{100}\green{10001}\blue{10000}00\red{11001110}\textcolor{violet}{1000}}\\
+  G&=\texttt{0011111101111000011111111111}
+\end{align*}
+
+\paragraph{Putting it together.}
+Thus, for fixed values of $n,w,h,r,b,d,v,t_0$, the number of possible consistent $x$ and $y$ is
+\begin{align*}
+  \mathbb{E}_{w,h,r,b,d,v,t_0} &= 2^{-g}E_1E_2E_3E_4E_5\\
+  &=2^{-g}\binom{v}{t_1+1} \binom{r'-b}{h-v-r'+b} \binom{z}{r'+1} \binom{f_0+f_1}{f_0} \\
+  &\quad \left(\sum_{i=0}^{t_1+v}(-1)^{i}\binom{t_1+v}{i}\binom{t_0+t_1+v-i(\sigma-1)-1}{t_1+v-1}\right)
+\end{align*}
+where $g:=n-z-v-2r-1+b$ is the number of times we assumed the result of the convolution times the non-zero state is equal to some value, i.e. the positions where $G_i=1$ in the example above.
+To obtain the enumerator for fixed values of $n,w,h$, we thus need to sum over all possible values of $r,b,d,v,t_0$. Note that:
+\begin{itemize}
+  \item $r$ can take values from $0$ through $\min\{w,h,\frac{n-h}{\sigma}+1\}$.
+  \item By definition, $b=1\implies d=0$, therefore, $(b, d) \in \{(0,0), (0,1), (1,0)\}$.
+  \item $v$ can take values from $0$ through $\min\{n-w,\frac{h}{2},\frac{n-h}{\sigma-1}\}$.
+  \item $t_0$ can take values from $0$ through $n-h$.
+\end{itemize}
+Thus, for fixed values of $n,w,h$, the number of possible consistent $x$ and $y$ is$$\mathbb{E}_{w,h} = \sum_{r=0}^{\min\{w,h,\frac{n-h}{\sigma}+1\}}\sum_{b, d\in \{0, 1\}:bd\ne 1}\sum_{v=0}^{\min\{n-w,\frac{h}{2},\frac{n-h}{\sigma-1}\}}\sum_{t_0=0}^{n-h}\mathbb{E}_{n,w,h,r,b,d,v,t_0}$$
+
+\subsection{Extended Convolution}\label{sec:extendedconv}
+
+Let $\mathbf{x} \in \{0,1\}^k$ be an input vector, and let $\mathbf{C}$ be a fixed convolution matrix, inducing the linear map $\mathbf{y} = \mathbf{x}\mathbf{C}$.
+We observe a structural issue when $\mathbf{x}$ is low-weight and only non-zero near its tail.
+
+Consider the extreme example $\mathbf{x} = 000\ldots0001$.
+Because the convolution operator receives only a single nonzero input located at the final coordinate, the output $\mathbf{y} = \mathbf{x}\mathbf{C}$ has nonzero support only near the end of the vector.  A subsequent permutation of $\mathbf{y}$ may, with non-negligible probability, place this nonzero entry again among the final coordinates.  In such a case, the composition of convolution and permutation fails to achieve meaningful diffusion, leaving us effectively where we started.
+
+More generally, the same issue arises when only the last $O(1)$ positions of $\mathbf{x}$ are nonzero, e.g., $\mathbf{x} = 000\ldots01111$.
+Then $\mathbf{y} = \mathbf{x}\mathbf{C}$ still exhibits support concentrated near the final coordinates $\mathbf{y} = 000\ldots01???$, and after permutation the support may again lie in the last few positions.
+This degeneracy does not occur when the nonzero entries of $\mathbf{x}$ reside in the middle or beginning of the vector, in which case the convolution naturally spreads support over a larger portion of the output.
+
+\medskip
+\noindent\textbf{Mitigating the issue.}
+We remedy this vulnerability by introducing a so-called \emph{extended convolution}.
+In extended convolution, we increase the convolution horizon beyond the nominal length $k$ by producing $\kappa$ additional output positions.
+This forces the nonzero tail of $\mathbf{x}$ to mix into a region subsequently permuted into substantially different coordinates.
+
+
+Consider the input that has trailing zeros (consider the extension part of the input x)
+
+\paragraph{Baseline.}
+
+Let us first count place the $t_1$  output freezone $\olive{1}$s  and the $d$ trailzones $\violet{10}^{\sigma-1}$. There is exactly one way to do this. Our example above with $t_1=7,d=1$ would look like
+\begin{align*}
+  x&=\texttt{?\blue{1}???????????????000}\\
+  y&=\texttt{?\olive{1}?\olive{1}?\olive{1}?\olive{1}?\olive{1}?\olive{1}?\olive{1}?\textcolor{violet}{1000}}
+\end{align*}

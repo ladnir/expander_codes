@@ -1,0 +1,694 @@
+\section{A linear-distance theorem for Expand--Accumulate}
+\label{sec:ea-distance}
+
+This section turns the exact first moment from
+Theorem~\ref{thm:expand-accumulate-first-moment} into a closed asymptotic
+distance theorem for the Bernoulli ensemble of \cite{EA}.  The proof retains
+the exact two-state accumulator process.  It exposes two independent
+constraints: sparse messages determine the required expander density, while
+linear-weight messages determine the achievable relative distance.
+
+Let
+\begin{equation}
+ \mathsf{h}(x):=-x\ln x-(1-x)\ln(1-x)
+ \label{eq:binary-entropy-nats}
+\end{equation}
+denote binary entropy in nats.  Fix $\delta\in(0,1/2)$ and define
+\begin{equation}
+ I_\delta:=1-2\sqrt{\delta(1-\delta)}.
+ \label{eq:ea-sparse-rate}
+\end{equation}
+
+\subsection{Spectral extraction of the accumulator enumerator}
+
+Fix a message of weight $r$.  By
+Lemma~\ref{lem:bernoulli-expander-enumerator}, its expanded word has
+independent Bernoulli coordinates with parameter $q_r$ from
+\eqref{eq:bernoulli-expander-parity}.  If $z$ marks a nonzero accumulator
+output, the exact transition matrix is
+\begin{equation}
+ T_q(z):=
+ \begin{pmatrix}
+  1-q & qz\\
+  q   & (1-q)z
+ \end{pmatrix}.
+ \label{eq:ea-weight-matrix}
+\end{equation}
+Rows index the current accumulator state, and columns index the next state.
+The factor $z$ marks the next state because that state is also the current
+output symbol.
+
+For $q\in[0,1/2]$ and $z\in(0,1]$, put
+\begin{equation}
+ \lambda(q,z)
+ :=\frac{(1-q)(1+z)
+ +\sqrt{(1-q)^2(1-z)^2+4q^2z}}{2}.
+ \label{eq:ea-spectral-radius}
+\end{equation}
+For $q>0$, define the lower-tail exponent
+\begin{equation}
+ J_\delta(q)
+ :=\sup_{0<z\leq 1}
+ \left\{\delta\ln z-\ln\lambda(q,z)\right\}.
+ \label{eq:ea-tail-rate}
+\end{equation}
+
+\begin{lemma}[Exact spectral tail bound]
+\label{lem:ea-spectral-tail}
+Let $H$ be the weight of the accumulator output when its input consists of
+$n$ independent Bernoulli variables with parameter $q\in(0,1/2]$.  Then
+\begin{equation}
+ \Pr[H\leq\lfloor\delta n\rfloor]
+ \leq \sqrt{2}\exp\bigl(-nJ_\delta(q)\bigr).
+ \label{eq:ea-spectral-tail}
+\end{equation}
+Consequently, the Bernoulli Expand--Accumulate ensemble satisfies
+\begin{equation}
+ \Pr\left[\exists\xv\neq 0:
+   \hw{\xv\B\A}\leq\lfloor\delta n\rfloor\right]
+ \leq
+ \sqrt{2}\sum_{r=1}^{k}\binom{k}{r}
+ \exp\bigl(-nJ_\delta(q_r)\bigr).
+ \label{eq:ea-spectral-first-moment}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Let $\ev_0=(1,0)^{\mathsf T}$ and $\boldsymbol{1}=(1,1)^{\mathsf T}$.  The exact
+probability generating function is
+\begin{equation}
+ \Ebb[z^H]=\ev_0^{\mathsf T}T_q(z)^n\boldsymbol{1}.
+ \label{eq:ea-output-pgf}
+\end{equation}
+This identity is also the transfer-matrix form of the accumulator enumerator
+in \eqref{eq:accumulator-enumerator-recalled}.
+
+Set $D_z:=\operatorname{diag}(1,\sqrt z)$.  The similar matrix
+\begin{equation}
+ D_zT_q(z)D_z^{-1}
+ =
+ \begin{pmatrix}
+  1-q & q\sqrt z\\
+  q\sqrt z & (1-q)z
+ \end{pmatrix}
+ \label{eq:ea-symmetric-matrix}
+\end{equation}
+is symmetric and positive semidefinite.  Its largest eigenvalue is
+$\lambda(q,z)$.  Therefore
+\begin{equation}
+ \Ebb[z^H]
+ \leq \lambda(q,z)^n\lVert D_z\boldsymbol{1}\rVert_2
+ =\sqrt{1+z}\,\lambda(q,z)^n.
+ \label{eq:ea-pgf-spectral-bound}
+\end{equation}
+For $z\leq 1$, the event $H\leq\lfloor\delta n\rfloor$ implies
+$z^H\geq z^{\lfloor\delta n\rfloor}$.  Apply Markov's inequality to
+$z^H$, use \eqref{eq:ea-pgf-spectral-bound}, and optimize over $z$ to obtain
+\eqref{eq:ea-spectral-tail}.  Sum this bound over the
+$\binom{k}{r}$ messages of each weight $r$ to obtain
+\eqref{eq:ea-spectral-first-moment}.
+\end{proof}
+
+The next lemma records the two endpoints of the exponent.  The limit at zero
+controls sparse messages.  The value at one half controls the bulk.
+
+\begin{lemma}[Endpoint exponents]
+\label{lem:ea-endpoint-exponents}
+For every $\delta\in(0,1/2)$, the function $J_\delta$ is continuous and
+strictly positive on $(0,1/2]$.  Moreover,
+\begin{align}
+ \liminf_{q\downarrow 0}\frac{J_\delta(q)}{q}
+ &\geq I_\delta,
+ \label{eq:ea-sparse-exponent-limit}\\
+ J_\delta(1/2)
+ &=\ln 2-\mathsf{h}(\delta).
+ \label{eq:ea-dense-exponent}
+\end{align}
+\end{lemma}
+
+\begin{proof}
+For the sparse limit, set $z=\exp(-\theta q)$ for a fixed $\theta\geq 0$.
+Expansion of \eqref{eq:ea-spectral-radius} at $q=0$ gives
+\begin{equation}
+ \ln\lambda(q,e^{-\theta q})
+ =q\left(-1-\frac{\theta}{2}
+   +\sqrt{1+\frac{\theta^2}{4}}\right)+O(q^2).
+ \label{eq:ea-sparse-spectral-expansion}
+\end{equation}
+Substitution in \eqref{eq:ea-tail-rate}, followed by the choice
+\begin{equation}
+ \theta=\frac{1-2\delta}{\sqrt{\delta(1-\delta)}},
+ \label{eq:ea-sparse-theta}
+\end{equation}
+gives \eqref{eq:ea-sparse-exponent-limit}.
+
+At $q=1/2$, one has $\lambda(1/2,z)=(1+z)/2$.  The optimizer in
+\eqref{eq:ea-tail-rate} is $z=\delta/(1-\delta)$.  Direct substitution gives
+\eqref{eq:ea-dense-exponent}.
+
+It remains to justify the qualitative claims.  At $z=1$, the objective in
+\eqref{eq:ea-tail-rate} is zero.  Its derivative with respect to $\ln z$ is
+$\delta-1/2<0$.  Moving $z$ below one therefore makes the objective positive.
+Thus $J_\delta(q)>0$ for every $q>0$.  On any compact interval bounded away
+from $q=0$, the objective tends uniformly to minus infinity as $z$ tends to
+zero.  Its supremum may consequently be restricted to a compact interval of
+$z$ values.  Continuity then follows from continuity of
+\eqref{eq:ea-spectral-radius}.
+\end{proof}
+
+\subsection{Asymptotic theorem}
+
+\begin{theorem}[Binary Expand--Accumulate distance]
+\label{thm:ea-linear-distance}
+Let $k=k(n)$ satisfy $k/n\to R$ for a constant $R\in(0,1)$.  Sample
+$\B\gets\dist^{\mathrm{Ber}}_{k,n,p_n}$ with
+\begin{equation}
+ p_n=C\frac{\ln n}{n}
+ \label{eq:ea-density}
+\end{equation}
+for a constant $C>0$, and let $\A$ be the binary accumulator.  Fix
+$\delta\in(0,1/2)$.  If
+\begin{align}
+ C\left(1-2\sqrt{\delta(1-\delta)}\right)&>1,
+ \label{eq:ea-sparse-condition}\\
+ \mathsf{h}(\delta)&<(1-R)\ln 2,
+ \label{eq:ea-gv-condition}
+\end{align}
+then
+\begin{equation}
+ \Pr\left[
+   \min_{\xv\in\Fbb_2^k\setminus\{0\}}
+   \hw{\xv\B\A}\leq\lfloor\delta n\rfloor
+ \right]=o(1).
+ \label{eq:ea-linear-distance-conclusion}
+\end{equation}
+In particular, with probability $1-o(1)$, the sampled generator is injective
+and its code has relative minimum distance greater than $\delta$.
+\end{theorem}
+
+\begin{proof}
+We bound \eqref{eq:ea-spectral-first-moment} in three message-weight ranges.
+Write $q_r=(1-(1-2p_n)^r)/2$.
+
+First consider sparse messages.  By
+\eqref{eq:ea-sparse-exponent-limit} and
+\eqref{eq:ea-sparse-condition}, there are constants
+$\epsilon>0$ and $a_0>0$ such that
+\begin{equation}
+ \gamma:=C(I_\delta-\epsilon)(1-a_0)>1
+ \label{eq:ea-sparse-margin}
+\end{equation}
+and $J_\delta(q)\geq(I_\delta-\epsilon)q$ for $q\leq a_0$.
+For $rp_n\leq a_0$, the inequalities
+\begin{equation}
+ q_r\leq rp_n,
+ \qquad
+ q_r\geq\frac{1-e^{-2rp_n}}{2}
+       \geq rp_n(1-a_0)
+ \label{eq:ea-qr-sparse-bounds}
+\end{equation}
+give
+\begin{equation}
+ nJ_\delta(q_r)\geq\gamma r\ln n.
+ \label{eq:ea-sparse-tail-sum-exponent}
+\end{equation}
+Since $k=O(n)$, the contribution of all $r\leq a_0/p_n$ is at most
+\begin{equation}
+ \sqrt{2}\sum_{r\geq 1}k^r n^{-\gamma r}=o(1).
+ \label{eq:ea-sparse-tail-sum}
+\end{equation}
+
+Next consider intermediate weights.  If $rp_n>a_0$, then
+\begin{equation}
+ q_r\geq q_*:=\frac{1-e^{-2a_0}}{2}>0.
+ \label{eq:ea-intermediate-q}
+\end{equation}
+Lemma~\ref{lem:ea-endpoint-exponents} implies
+\begin{equation}
+ j_*:=\min_{q\in[q_*,1/2]}J_\delta(q)>0.
+ \label{eq:ea-intermediate-rate}
+\end{equation}
+Choose a constant $\eta\in(0,R/2)$ small enough that
+\begin{equation}
+ R\mathsf{h}(\eta/R)<j_*.
+ \label{eq:ea-intermediate-eta}
+\end{equation}
+The standard Hamming-ball estimate gives
+\begin{equation}
+ \sum_{r\leq\eta n}\binom{k}{r}
+ \leq\exp\left(nR\mathsf{h}(\eta/R)+o(n)\right).
+ \label{eq:ea-intermediate-message-count}
+\end{equation}
+Thus the contribution of $a_0/p_n<r\leq\eta n$ is exponentially small.
+
+Finally, suppose that $r>\eta n$.  Uniformly over these weights,
+\begin{equation}
+ 0\leq\frac12-q_r
+ =\frac{(1-2p_n)^r}{2}
+ \leq\frac12e^{-2p_nr}
+ \leq\frac12n^{-2C\eta}=o(1).
+ \label{eq:ea-dense-q}
+\end{equation}
+Continuity from Lemma~\ref{lem:ea-endpoint-exponents} therefore gives
+\begin{equation}
+ \inf_{r>\eta n}J_\delta(q_r)
+ =\ln 2-\mathsf{h}(\delta)-o(1).
+ \label{eq:ea-dense-rate}
+\end{equation}
+There are at most $2^k$ messages in this range.  Their total contribution is
+at most
+\begin{equation}
+ \sqrt{2}\exp\left(
+ n\bigl(R\ln2+\mathsf{h}(\delta)-\ln2+o(1)\bigr)
+ \right)=o(1)
+ \label{eq:ea-dense-tail-sum}
+\end{equation}
+by \eqref{eq:ea-gv-condition}.  All three ranges vanish, so
+\eqref{eq:ea-spectral-first-moment} proves
+\eqref{eq:ea-linear-distance-conclusion}.
+\end{proof}
+
+Condition~\eqref{eq:ea-gv-condition} is exactly the binary random-linear-code
+distance condition.  The accumulator therefore loses no asymptotic distance
+in the linear-weight regime.  The additional density condition
+\eqref{eq:ea-sparse-condition} is caused by low-weight messages.  For example,
+at relative distance $\delta=0.05$, it requires
+\begin{equation}
+ C>\frac{1}{1-2\sqrt{0.05\cdot0.95}}\approx1.773.
+ \label{eq:ea-delta-five-density}
+\end{equation}
+This constant is an asymptotic threshold.  A finite failure target still
+requires evaluation of the exact first moment in
+Theorem~\ref{thm:expand-accumulate-first-moment}.
+
+For comparison, write $\beta=1/2-\delta$.  The Markov-chain analysis in
+\cite[Theorem~3.10]{EA} requires
+\begin{equation}
+ C>\frac{1}{\beta^2}
+ \quad\text{and}\quad
+ R<\min\left\{
+ \frac{2}{\ln2}\frac{1-e^{-1}}{1+e^{-1}}\beta^2,
+ \frac{2}{e^2}
+ \right\}.
+ \label{eq:ea-prior-conditions}
+\end{equation}
+At $\delta=0.05$, its density condition is $C>4.938$, whereas
+\eqref{eq:ea-sparse-condition} requires only $C>1.773$.  At length
+$n=5\cdot2^{20}$, these asymptotic thresholds correspond to expected row
+weights greater than $76.41$ and $27.43$, respectively.  For rate $R=0.2$,
+the prior rate condition permits $\delta<0.1127$, while
+\eqref{eq:ea-gv-condition} permits $\delta<0.2430$.  These comparisons concern
+asymptotic thresholds, not a certified finite failure probability.
+
+\subsection{Certified finite evaluation}
+\label{sec:ea-finite-certificate}
+
+We now certify one parameter set from the concrete regime of \cite{EA}.  The
+calculation must cover every nonzero message weight.  Evaluating a numerical
+optimizer at selected weights does not provide that coverage.
+
+For $q\in[0,1/2]$ and $z\in(0,1]$, define
+\begin{equation}
+ M_n(q,z):=\ev_0^{\mathsf T}T_q(z)^n\boldsymbol{1}.
+ \label{eq:ea-exact-mgf}
+\end{equation}
+For an individually evaluated weight $r$ and a fixed marker $z_r$, the exact
+transfer matrix gives
+\begin{equation}
+ \binom{k}{r}\Pr[H_r\leq L]
+ \leq\binom{k}{r}z_r^{-L}M_n(q_r,z_r).
+ \label{eq:ea-certified-exact-term}
+\end{equation}
+Here $H_r$ denotes the accumulator-output weight for any fixed message of
+weight $r$.  The probability is over the Bernoulli expander.
+
+The remaining weights are evaluated in contiguous blocks.  Recall the
+symmetric matrix $S_q(z):=D_zT_q(z)D_z^{-1}$ from
+\eqref{eq:ea-symmetric-matrix}.  Its derivative satisfies
+\begin{equation}
+ \frac{\partial S_q(z)}{\partial q}
+ =-
+ \begin{pmatrix}1\\-\sqrt z\end{pmatrix}
+ \begin{pmatrix}1&-\sqrt z\end{pmatrix}
+ \preceq0.
+ \label{eq:ea-spectral-monotonicity}
+\end{equation}
+Thus $\lambda(q,z)$ is nonincreasing in $q$.  Since $q_r$ is nondecreasing in
+$r$, any block $[a,b]\subseteq[1,k/2]$ satisfies
+\begin{equation}
+ \sum_{r=a}^{b}\binom{k}{r}\Pr[H_r\leq L]
+ \leq
+ (b-a+1)e^{k\mathsf{h}(b/k)}
+ \sqrt{1+z}\,z^{-L}\lambda(q_a,z)^n.
+ \label{eq:ea-certified-block-term}
+\end{equation}
+Equation~\eqref{eq:ea-certified-block-term} uses
+$\binom{k}{r}\leq e^{k\mathsf{h}(r/k)}$ and monotonicity of binary entropy on
+$[0,1/2]$.  For a block above $k/2$, the same bound holds after replacing the
+message-count factor by $2^k$.
+
+The certificate generator chooses the markers $z_r$ and $z$ with an ordinary
+floating-point optimizer.  These choices do not affect soundness.  The
+verifier treats every stored marker as a fixed decimal number.  It recomputes
+\eqref{eq:ea-certified-exact-term} and
+\eqref{eq:ea-certified-block-term} with outward-rounded Arb ball arithmetic.
+The verifier also rejects a certificate unless its ranges partition
+$[1,k]$.
+
+\begin{theorem}[Certified concrete EA bounds]
+\label{thm:ea-certified-concrete}
+Let $(s,w,U)$ be any row of the following table.  Set
+$k:=2^s$, $n:=5k$, $p:=w/n$, and $L:=n/20$.
+\begin{center}
+\begin{tabular}{c|r|c|c}
+$s$ & expected row weight $w$ & failure bound $U$ & $-\log_2 U$\\
+\hline
+$20$ & $50$ & $6.891818499\cdot10^{-7}$ & $20.468611$\\
+$25$ & $56$ & $7.475946766\cdot10^{-7}$ & $20.351240$\\
+$30$ & $62$ & $8.107513660\cdot10^{-7}$ & $20.234237$
+\end{tabular}
+\end{center}
+For $\B\gets\dist^{\mathrm{Ber}}_{k,n,p}$,
+\begin{equation}
+ \Pr_{\B}\left[
+   \exists\xv\in\Fbb_2^k\setminus\{0\}:
+   \hw{\xv\B\A}\leq L
+ \right]
+ \leq U<2^{-20}.
+ \label{eq:ea-certified-result}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Each checked certificate evaluates weights $1$ through $128$ with
+\eqref{eq:ea-certified-exact-term}.  The three certificates cover the
+remaining weights with $211$, $299$, and $388$ instances of
+\eqref{eq:ea-certified-block-term}, respectively.  The largest total
+contribution from these blocks is less than
+$6.359\cdot10^{-976}$.  The outward upper endpoint of each complete Arb sum
+is less than the corresponding displayed value $U$.
+Theorem~\ref{thm:expand-accumulate-first-moment} proves
+\eqref{eq:ea-certified-result}.
+\end{proof}
+
+The weight-one contribution dominates all three certificates.  Repeating the
+calculations at the adjacent row weights $49$, $55$, and $61$ gives the bounds
+$1.211510\cdot10^{-6}$, $1.314181\cdot10^{-6}$, and
+$1.425203\cdot10^{-6}$, respectively.  These adjacent parameters do not meet
+the 20-bit target under this certificate.
+
+For comparison, the $C=3$ row of Figure~8 in \cite{EA} uses expected row
+weights $46.42$, $56.81$, and $67.21$ at these lengths.  Its extrapolated
+failure bounds at relative distance $0.05$ are $0.0157$, $0.00794$, and
+$0.00402$.  The certified bounds above use a slightly heavier first row, but
+they prove a uniform $2^{-20}$ failure target.  At the two larger lengths,
+they also use lower expected row weights.
+
+\subsection{Exact-row finite evaluation}
+\label{sec:ea-exact-row-certificate}
+
+We next replace the Bernoulli expander by
+$\dist^{\mathrm{row}}_{k,n,d}$.  The positive first moment in
+\eqref{eq:row-expand-accumulate-positive-first-moment} evaluates small
+message weights directly.  Two bounds cover the remaining weights.
+
+For $p=d/n$, define
+\begin{equation}
+ \vartheta_{n,d}:=\binom{n}{d}p^d(1-p)^{n-d}.
+ \label{eq:exact-row-conditioning-probability}
+\end{equation}
+
+\begin{lemma}[Conditioned-Bernoulli bound]
+\label{lem:exact-row-conditioning}
+Fix a message of weight $r$, and let $E$ be an event determined by its
+expanded word.  If $\B_{\mathrm{row}}\gets
+\dist^{\mathrm{row}}_{k,n,d}$ and
+$\B_{\mathrm{Ber}}\gets\dist^{\mathrm{Ber}}_{k,n,d/n}$, then
+\begin{equation}
+ \Pr[E(\xv\B_{\mathrm{row}})]
+ \leq \vartheta_{n,d}^{-r}
+ \Pr[E(\xv\B_{\mathrm{Ber}})].
+ \label{eq:exact-row-conditioning-bound}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Under the Bernoulli distribution, condition each of the $r$ selected rows to
+have weight $d$.  The conditioned rows are independent and uniform on the
+weight-$d$ slice, so their joint distribution is the exact-row distribution.
+The conditioning event has probability $\vartheta_{n,d}^r$.  Dropping that
+event from the numerator of the conditional probability proves
+\eqref{eq:exact-row-conditioning-bound}.
+\end{proof}
+
+The dense bound uses the normalized Krawtchouk value
+\begin{equation}
+ \kappa_d(j):=\frac{K_d^{(n)}(j)}{\binom{n}{d}}.
+ \label{eq:normalized-krawtchouk}
+\end{equation}
+For a character of weight $j$, this value is the Fourier eigenvalue of one
+uniform weight-$d$ row.
+
+\begin{lemma}[Dense exact-row bound]
+\label{lem:exact-row-dense}
+Fix a message of weight $r$ and put
+\begin{equation}
+ a_r:=\frac{2rd(n-d)}{n(n-1)}.
+ \label{eq:exact-row-dense-exponent}
+\end{equation}
+For $L<n/2$, its exact-row Expand--Accumulate image satisfies
+\begin{equation}
+ \Pr[\hw{\xv\B\A}\leq L]
+ \leq
+ \left(
+  \frac{e^{n\mathsf{h}(L/n)}}{2^n}\,
+  2(1+e^{-a_r})^n
+ \right)^{1/2}.
+ \label{eq:exact-row-dense-bound}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Let $X$ be the intersection size of a uniform $d$-subset and a fixed
+$j$-subset of $[n]$.  Then $X$ is hypergeometric and
+$\kappa_d(j)=\Ebb[(-1)^X]$.  A hypergeometric random variable has the same
+distribution as a sum of independent, not necessarily identically
+distributed, Bernoulli variables~\cite{HuiPark14}.  Writing their parameters
+as $p_i$ gives
+\begin{equation}
+ |\kappa_d(j)|^2
+ =\prod_i(1-2p_i)^2
+ \leq\exp\left(-4\sum_i p_i(1-p_i)\right)
+ =\exp\left(-4\operatorname{Var}(X)\right).
+ \label{eq:krawtchouk-variance-bound}
+\end{equation}
+The hypergeometric variance is
+\begin{equation}
+ \operatorname{Var}(X)
+ =d\frac{j}{n}\left(1-\frac{j}{n}\right)\frac{n-d}{n-1}.
+ \label{eq:hypergeometric-variance}
+\end{equation}
+
+Let $Y$ be the sum of the $r$ selected exact-weight rows.  Parseval's identity
+for the binary cube gives the squared $L_2$ norm of the density of $Y$ relative
+to the uniform distribution as
+\begin{equation}
+ \sum_{j=0}^{n}\binom{n}{j}|\kappa_d(j)|^{2r}.
+ \label{eq:exact-row-density-l2}
+\end{equation}
+The summand is symmetric under $j\mapsto n-j$.  For $j\leq n/2$,
+\eqref{eq:krawtchouk-variance-bound} and
+\eqref{eq:hypergeometric-variance} give
+\begin{equation}
+ |\kappa_d(j)|^{2r}\leq e^{-a_rj}.
+ \label{eq:exact-row-eigenvalue-profile}
+\end{equation}
+Thus \eqref{eq:exact-row-density-l2} is at most
+$2(1+e^{-a_r})^n$.
+
+The accumulator is invertible.  The preimage of its output ball therefore has
+the same cardinality, at most $e^{n\mathsf{h}(L/n)}$.  Apply Cauchy--Schwarz
+between its indicator and the density of $Y$ to obtain
+\eqref{eq:exact-row-dense-bound}.
+\end{proof}
+
+\begin{theorem}[Certified exact-row EA bounds]
+\label{thm:ea-certified-exact-row}
+Let $(s,d,U)$ be any row of the following table.  Set $k:=2^s$, $n:=5k$, and
+$L:=n/20$.  If $\B\gets\dist^{\mathrm{row}}_{k,n,d}$, then
+\begin{equation}
+ \Pr_{\B}\left[
+  \exists\xv\in\Fbb_2^k\setminus\{0\}:
+  \hw{\xv\B\A}\leq L
+ \right]\leq U<2^{-20}.
+ \label{eq:ea-certified-exact-row-result}
+\end{equation}
+\begin{center}
+\begin{tabular}{c|r|c|c}
+$s$ & exact row weight $d$ & failure bound $U$ & $-\log_2 U$\\
+\hline
+$20$ & $31$ & $3.321605945\cdot10^{-7}$ & $21.521615$\\
+$25$ & $35$ & $2.548539646\cdot10^{-7}$ & $21.903825$\\
+$30$ & $39$ & $2.796467641\cdot10^{-7}$ & $21.769891$
+\end{tabular}
+\end{center}
+\end{theorem}
+
+\begin{proof}
+For $s=20,25,30$, respectively, the verifier evaluates message weights through
+$7,16,48$ with the positive shell recurrence
+\eqref{eq:row-shell-recurrence} and the positive accumulator tail
+\eqref{eq:accumulator-slice-tail}.  It covers the interval up to $k/8-1$
+with $225,304,373$ contiguous conditioned-Bernoulli blocks.  Each block uses
+\eqref{eq:ea-certified-block-term} and pays the conditioning factor from
+\eqref{eq:exact-row-conditioning-bound}.  Lemma~\ref{lem:exact-row-dense}
+covers every weight from $k/8$ through $k$ at once.
+
+The implementation evaluates the shell and conditioning probabilities with
+outward-rounded Arb balls.  A floating-point optimizer selects the Chernoff
+marker for each conditioning block, but the verifier treats the resulting
+decimal as fixed and checks the bound with Arb.  The three dense contributions
+are below $2^{-28{,}342}$, $2^{-2{,}082{,}004}$, and
+$2^{-98{,}337{,}579}$, respectively.  Summing all three regimes gives the
+displayed values.  The first-moment bound in
+Theorem~\ref{thm:expand-accumulate-first-moment} proves
+\eqref{eq:ea-certified-exact-row-result}.
+\end{proof}
+
+The exact-row table uses $19$, $21$, and $23$ fewer nonzero entries per row
+than the Bernoulli table in Theorem~\ref{thm:ea-certified-concrete}.  In all
+three exact-row certificates, the weight-one message term is the largest
+directly evaluated term.
+
+\subsection{Region-stratified left-regular evaluation}
+\label{sec:ea-regular-certificate}
+
+The global exact-row ensemble controls row weight but not the location of its
+nonzero entries.  We now apply the region-stratified ensemble from
+Section~\ref{sec:region-left-regular-expander}.  The accumulator retains one
+state bit between regions, so a scalar regional weight enumerator is
+insufficient.  Define the bivariate transfer matrix
+\begin{equation}
+ \mathbf U(X,Y):=
+ \begin{pmatrix}
+  1&XY\\
+  X&Y
+ \end{pmatrix}.
+ \label{eq:ea-regular-bivariate-matrix}
+\end{equation}
+Rows index the current accumulator state, and columns index the next state.
+The exponent of $X$ records input weight.  The exponent of $Y$ records output
+weight.  For $u\in[0,\ell]$, define
+\begin{align}
+ \mathbf S^{\mathrm{acc}}_{\ell,u}(Y)
+ &:=\frac{1}{\binom{\ell}{u}}[X^u]\mathbf U(X,Y)^\ell,
+ \label{eq:ea-regular-slice-matrix}\\
+ \mathbf R^{\mathrm{acc}}_{\ell,r}(Y)
+ &:=\sum_{u=0}^{\ell}\rho^{(\ell)}_{r,u}
+      \mathbf S^{\mathrm{acc}}_{\ell,u}(Y).
+ \label{eq:ea-regular-region-matrix}
+\end{align}
+
+\begin{theorem}[Exact left-regular EA first moment]
+\label{thm:ea-regular-first-moment}
+Assume that $n=d\ell$.  Sample
+$\B\gets\dist^{\mathrm{reg}}_{k,n,d}$ and set $\G:=\B\A$.  Let $\ev_0$ be
+the unit column vector for accumulator state zero.  The expected number of
+nonzero messages whose encoding has weight at most $L$ is
+\begin{equation}
+ \boxed{
+ \mu_{\mathrm{EA}}^{\mathrm{reg}}(L)
+ =\sum_{r=1}^{k}\binom{k}{r}\sum_{h=0}^{L}[Y^h]\,
+   \ev_0^\mathsf{T}
+   \mathbf R^{\mathrm{acc}}_{\ell,r}(Y)^d\boldsymbol{1}.
+ }
+ \label{eq:ea-regular-first-moment}
+\end{equation}
+This quantity upper-bounds the probability that the generated code has
+minimum distance at most $L$.
+\end{theorem}
+
+\begin{proof}
+Lemma~\ref{lem:region-left-regular-shell-law} makes the input in each region a
+mixture of uniform Hamming slices.  Matrix
+\eqref{eq:ea-regular-slice-matrix} averages the accumulator transfer over one
+such slice.  Matrix multiplication retains the accumulator state at each
+regional boundary.  Sum over regional shells, output weights, and nonzero
+messages.  Markov's inequality gives the failure bound.
+\end{proof}
+
+The exact matrix coefficient is used only for small message weights.  Lemma
+\ref{lem:regular-poisson-comparison} and the Bernoulli accumulator matrix
+$T_q(z)$ give
+\begin{equation}
+ \Ebb_{\B}\!\left[z^{\hw{\xv\B\A}}\right]
+ \leq\gamma_r^d\,
+ \ev_0^\mathsf{T}T_{q^{\mathrm{reg}}_r}(z)^n\boldsymbol{1}.
+ \label{eq:ea-regular-poisson-mgf}
+\end{equation}
+For a contiguous block $s\leq r\leq t\leq k/2$, use $gamma_t$ and
+$q^{\mathrm{reg}}_s$.  The former is an upper bound because $\gamma_r$ is
+nondecreasing.  The latter is an upper bound on the lower-tail moment because
+the spectral radius in \eqref{eq:ea-spectral-radius} is nonincreasing in $q$.
+
+For dense messages, let $V_n(L):=\sum_{h=0}^{L}\binom{n}{h}$.  The accumulator
+is invertible.  Lemma~\ref{lem:regular-point-mass} therefore gives
+\begin{equation}
+ \Pr_{\B}[\hw{\xv\B\A}\leq L]
+ \leq V_n(L)2^{d-n}(1+e^{-2r/\ell})^n.
+ \label{eq:ea-regular-dense-bound}
+\end{equation}
+
+\begin{theorem}[Certified left-regular EA bounds]
+\label{thm:ea-certified-regular}
+For each row below, let $n:=d\ell$, sample
+$\B\gets\dist^{\mathrm{reg}}_{k,n,d}$, and use the binary accumulator $\A$.
+The displayed value $U$ satisfies
+\begin{equation}
+ \Pr_{\B}[\exists\xv\ne0:\ \hw{\xv\B\A}\leq L]
+ \leq U<2^{-20}.
+ \label{eq:ea-certified-regular-result}
+\end{equation}
+\begin{center}
+\begin{tabular}{c|r|r|r|r|c|c}
+rate &$k$ &$d$ &$\ell$ &$L$ &$U$ &$-\log_2U$\\
+\hline
+$1/5$ &$1{,}048{,}544$ &$31$ &$169{,}120$ &$262{,}136$
+ &$3.108423898\cdot10^{-7}$ &$21.617313$\\
+$1/2$ &$1{,}048{,}576$ &$64$ &$32{,}768$ &$230{,}718$
+ &$8.982345581\cdot10^{-7}$ &$20.086404$
+\end{tabular}
+\end{center}
+The rate-$1/2$ distance is
+\[
+ \frac{L}{n}=0.1100149155\ldots
+ =0.9998823119\ldots\,\delta_{\mathrm{GV}}(1/2).
+\]
+\end{theorem}
+
+\begin{proof}
+The verifier \path{scripts/regular_ea_certificate.py} uses
+\eqref{eq:ea-regular-first-moment} through message weights $17$ and $14$ in
+the two rows.  The corresponding exact contributions are at most
+$3.108394\cdot10^{-7}$ and $8.933170\cdot10^{-7}$.  In both cases, message
+weight two gives the largest exact term.
+
+The verifier next applies \eqref{eq:ea-regular-poisson-mgf} in $18$ and $13$
+contiguous blocks.  Their total contributions are at most
+$3.001904\cdot10^{-12}$ and $1.153645\cdot10^{-12}$.  Finally, it applies
+\eqref{eq:ea-regular-dense-bound} in $3072$ and $3073$ positive blocks of width
+at most $256$.  The dense contributions are below $2^{-700{,}000}$ and
+$4.916442\cdot10^{-9}$, respectively.  Every bound is evaluated with
+outward-rounded Arb balls at $192$-bit precision.  Summing the three regimes
+proves \eqref{eq:ea-certified-regular-result}.
+\end{proof}
+
+At rate $1/5$, the regular degree $31$ matches the smallest certified global
+exact-row weight in Theorem~\ref{thm:ea-certified-exact-row}; it does not
+improve expander sparsity.  At rate $1/2$, the Bernoulli certificate at the
+same $k,n,L$ requires expected row weight $75$ to reach the 20-bit target.  It
+gives failure bound $8.174250904\cdot10^{-7}$.  The regular row weight $64$
+reduces the number of expander edges by $14.67\%$.  This gain is smaller than
+the wrapped-EC gain because every even-weight message returns the accumulator
+to state zero at each regional boundary.  Message weight two is consequently
+the limiting case.

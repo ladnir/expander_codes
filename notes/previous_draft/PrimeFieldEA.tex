@@ -1,0 +1,1368 @@
+\section{Expand--Accumulate over a prime field}
+\label{sec:prime-field-ea}
+
+This section extends the enumerator proof to the weighted prime-field model
+from Section~\ref{sec:prime-field-expander}.  Fix a prime $p$, put $s:=p-1$,
+and measure the Hamming weight of a vector by its number of nonzero field
+symbols.  The expander support is sampled as before, but every sampled edge
+has an independent uniform label in $\Fbb_p^*$.  The accumulator remains the
+prefix-sum map over $\Fbb_p$.
+
+The random labels serve the same purpose as the nonzero diagonal weighters in
+the generalized BAA construction: they make the law of a fixed message depend
+only on its support.  Here they must be attached to expander edges, rather than
+only after the expander, because a post-expander scaling does not change
+whether an addition-only coordinate sum vanishes.
+
+\subsection{The two-state accumulator kernel}
+
+Suppose an accumulator input symbol is zero with probability $1-q$ and is
+uniform on $\Fbb_p^*$ with total probability $q$.  If $z$ marks a nonzero
+output symbol, the zero/nonzero state classes have transition matrix
+\begin{equation}
+ T^{(p)}_q(z):=
+ \begin{pmatrix}
+  1-q&qz\\
+  q/s&(1-q/s)z
+ \end{pmatrix}.
+ \label{eq:prime-ea-weight-matrix}
+\end{equation}
+From a nonzero state, exactly one of the $s$ possible nonzero increments
+returns the accumulator to zero.  All other increments preserve a nonzero
+state.  This proves that the two classes are an exact lumping, not an
+approximation.
+
+For $q\in[0,s/p]$ and $z\in(0,1]$, define
+\begin{equation}
+\begin{split}
+ \lambda_p(q,z):=\frac12\bigg(&1-q+(1-q/s)z\\
+ &+\sqrt{\bigl(1-q-(1-q/s)z\bigr)^2+4q^2z/s}\bigg)
+\end{split}
+\label{eq:prime-ea-spectral-radius}
+\end{equation}
+and
+\begin{equation}
+ J^{(p)}_\delta(q)
+ :=\sup_{0<z\leq1}
+   \{\delta\ln z-\ln\lambda_p(q,z)\}.
+ \label{eq:prime-ea-tail-rate}
+\end{equation}
+
+\begin{lemma}[Prime-field accumulator tail]
+\label{lem:prime-ea-spectral-tail}
+Let $H$ be the output weight of the $\Fbb_p$ accumulator on $n$ independent
+inputs with the law above.  For $0<q\leq s/p$ and
+$0<\delta<s/p$,
+\begin{equation}
+ \Pr[H\leq\lfloor\delta n\rfloor]
+ \leq\sqrt p\exp\bigl(-nJ^{(p)}_\delta(q)\bigr).
+ \label{eq:prime-ea-spectral-tail}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Let $D_z:=\operatorname{diag}(1,\sqrt{sz})$.  The similar matrix
+\[
+ D_zT^{(p)}_q(z)D_z^{-1}
+ =\begin{pmatrix}
+   1-q&q\sqrt{z/s}\\
+   q\sqrt{z/s}&(1-q/s)z
+  \end{pmatrix}
+\]
+is symmetric and positive semidefinite for $q\leq s/p$.  Its largest
+eigenvalue is \eqref{eq:prime-ea-spectral-radius}.  With $\ev_0$ selecting
+state zero,
+\[
+ \Ebb[z^H]
+ =\ev_0^{\mathsf T}T^{(p)}_q(z)^n\boldsymbol 1
+ \leq\sqrt{1+sz}\,\lambda_p(q,z)^n
+ \leq\sqrt p\,\lambda_p(q,z)^n.
+\]
+Markov's inequality applied to $z^H$, followed by optimization over
+$z\in(0,1]$, proves the claim.
+\end{proof}
+
+For the labeled Bernoulli expander, let $q^{(p)}_r$ be
+\eqref{eq:prime-bernoulli-activation}.  There are
+\begin{equation}
+ N_{p,k,r}:=\binom{k}{r}s^{r-1}
+ \label{eq:prime-projective-support-count}
+\end{equation}
+one-dimensional message subspaces with support size $r$.  Counting these
+projective messages, instead of all $s$ nonzero scalar multiples of each one,
+gives the exact first-moment unit for the minimum-distance event.
+For one fixed support of size $r$, write
+\begin{equation}
+ \tau^{(p)}_r(L)
+ :=\sum_{h=0}^L[z^h]\,
+   \ev_0^{\mathsf T}T^{(p)}_{q^{(p)}_r}(z)^n\boldsymbol 1
+ \label{eq:prime-ea-line-tail}
+\end{equation}
+for the bad-output probability of any one projective message line on that
+support.
+
+\begin{theorem}[Labeled Bernoulli EA first moment]
+\label{thm:prime-ea-first-moment}
+Let $\B$ be the labeled Bernoulli expander of density $\theta$, let $\A$ be
+the accumulator over $\Fbb_p$, and set $\G:=\B\A$.  The expected number of
+one-dimensional message subspaces whose nonzero codewords have weight at most
+$L$ is
+\begin{equation}
+ \boxed{
+ \mu^{(p)}_{\mathrm{EA}}(L)
+ =\sum_{r=1}^k N_{p,k,r}
+   \sum_{h=0}^L[z^h]\,
+   \ev_0^{\mathsf T}
+   T^{(p)}_{q^{(p)}_r}(z)^n\boldsymbol 1.
+ }
+ \label{eq:prime-ea-first-moment}
+\end{equation}
+Consequently,
+\begin{equation}
+ \Pr[d_{\min}(\G)\leq L]
+ \leq \mu^{(p)}_{\mathrm{EA}}(L).
+ \label{eq:prime-ea-first-moment-failure}
+\end{equation}
+If $\theta\leq(p-1)/p$, then also
+\begin{equation}
+ \mu^{(p)}_{\mathrm{EA}}(L)
+ \leq \sqrt p\sum_{r=1}^k N_{p,k,r}
+       \exp\bigl(-nJ^{(p)}_{L/n}(q^{(p)}_r)\bigr).
+ \label{eq:prime-ea-spectral-first-moment}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Scalar multiples have the same output support, so it suffices to count one
+representative of each message line.  Lemma~\ref{lem:prime-bernoulli-expander}
+makes the expanded coordinates independent with nonzero probability
+$q^{(p)}_r$.  Matrix \eqref{eq:prime-ea-weight-matrix} then gives the exact
+output-weight generating function.  Sum over support sizes and output weights.
+Markov's inequality bounds the bad-code event by the expected number of bad
+message lines, and Lemma~\ref{lem:prime-ea-spectral-tail} gives the final
+inequality.
+\end{proof}
+
+The preceding expectation treats all projective lines separately.  A first
+improvement is to group the whole projective family carried by one message
+support before taking the union bound.  This is the simplest form of the
+projective-family truncation used in recent large-field RAA
+analyses~\cite{akhiani26,khabbazian26}.
+
+\begin{corollary}[Support-grouped Bernoulli bound]
+\label{cor:prime-ea-support-grouped}
+Under the hypotheses of Theorem~\ref{thm:prime-ea-first-moment},
+\begin{equation}
+ \boxed{
+ \Pr[d_{\min}(\G)\leq L]
+ \leq
+ \sum_{r=1}^k\binom{k}{r}
+ \min\!\left\{1,s^{r-1}\tau^{(p)}_r(L)\right\}.
+ }
+ \label{eq:prime-ea-support-grouped}
+\end{equation}
+If $\theta\leq s/p$, then also
+\begin{equation}
+ \Pr[d_{\min}(\G)\leq L]
+ \leq
+ \sum_{r=1}^k\binom{k}{r}
+ \min\!\left\{1,
+  s^{r-1}\sqrt p\exp\bigl(-nJ^{(p)}_{L/n}(q^{(p)}_r)\bigr)
+ \right\}.
+ \label{eq:prime-ea-support-grouped-spectral}
+\end{equation}
+\end{corollary}
+
+\begin{proof}
+Fix a support $S\subseteq[k]$ of size $r$.  It carries $s^{r-1}$
+projective message lines.  Independent uniform edge labels make the bad-output
+probability of every such line equal to $\tau^{(p)}_r(L)$.  The probability
+that at least one line on $S$ is bad is therefore at most both $1$ and
+$s^{r-1}\tau^{(p)}_r(L)$.  Sum this bound over the $\binom{k}{r}$ choices of
+$S$.  Lemma~\ref{lem:prime-ea-spectral-tail} gives the second claim.
+\end{proof}
+
+Support grouping alone does not use the accumulator equations shared by the
+projective family.  The following conditional bound does.  Fix an unlabeled
+expander incidence pattern $\Gamma\subseteq[k]\times[n]$.  For
+$U\subseteq[n]$, put $W=[n]\setminus U=\{w_1<\cdots<w_m\}$, set $w_0=0$, and
+define the zero-terminated gaps
+\begin{equation}
+ I_a:=\{w_{a-1}+1,\ldots,w_a\},\qquad 1\leq a\leq m.
+ \label{eq:prime-ea-zero-gaps}
+\end{equation}
+The trailing coordinates after $w_m$ impose no zero equation.  For a message
+support $S$, let
+\begin{equation}
+ c_\Gamma(S,U)
+ :=\left|\left\{a:\Gamma\cap(S\times I_a)\ne\emptyset\right\}\right|
+ \label{eq:prime-ea-gap-rank}
+\end{equation}
+be the number of zero-terminated gaps hit by an active edge.
+
+\begin{lemma}[Projective surplus cancellation for labeled EA]
+\label{lem:prime-ea-projective-surplus}
+Fix $\Gamma$, a message support $S$ of size $r\geq1$, and an output container
+$U$.  Conditional on $\Gamma$, sample every edge label independently and
+uniformly from $\Fbb_p^*$.  Then
+\begin{equation}
+ \Pr_{\mathrm{labels}}\!\left[
+  \exists\xv:\operatorname{supp}(\xv)=S,\
+  \operatorname{supp}(\xv\B_\Gamma\A)\subseteq U
+ \right]
+ \leq
+ \boxed{\min\left\{1,s^{r-1-c_\Gamma(S,U)}\right\}.}
+ \label{eq:prime-ea-projective-surplus}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Fix one projective message $\xv$ with support $S$.  Requiring the accumulator
+output to vanish at $w_a$ gives the equation
+\[
+ \sum_{(i,j)\in\Gamma:\ i\in S,\ j\leq w_a}x_i\lambda_{i,j}=0.
+\]
+Regard these $m$ equations as a homogeneous system in the active edge labels.
+An edge ending in $I_a$ contributes, up to the nonzero column scale $x_i$,
+the suffix vector that starts at equation $a$.  The distinct nonzero suffix
+vectors are linearly independent.  The system therefore has rank exactly
+$c_\Gamma(S,U)$, including all expander collisions.
+
+If the active incidence contains $M$ edges, a rank-$c$ linear system has at
+most $s^{M-c}$ solutions in $(\Fbb_p^*)^M$: choose its nonpivot variables,
+after which the pivot variables are uniquely determined when they remain
+nonzero.  The probability for the fixed projective message is at most
+$s^{-c}$.  There are $s^{r-1}$ projective messages with exact support $S$.
+Union-bound over them and cap the result at one.
+\end{proof}
+
+Consequently, for either the Bernoulli or regular unlabeled incidence law,
+\begin{equation}
+ \Pr[d_{\min}(\G)\leq L]
+ \leq
+ \sum_{r=1}^k\ \sum_{\substack{S\subseteq[k]\\|S|=r}}
+ \ \sum_{\substack{U\subseteq[n]\\|U|=L}}
+ \Ebb_\Gamma\!\left[
+  \min\left\{1,s^{r-1-c_\Gamma(S,U)}\right\}
+ \right].
+ \label{eq:prime-ea-projective-master}
+\end{equation}
+Every output of weight at most $L$ is contained in at least one $L$-set $U$,
+so this is a union over supports and output containers, not over field-valued
+words or accumulator traces.
+
+For Bernoulli incidence, the expectation in
+\eqref{eq:prime-ea-projective-master} has an exact bivariate enumerator.  Put
+$m=n-L$, $a_r=(1-\theta)^r$, and
+\begin{equation}
+ F_r(z,v)
+ :=\frac{v}{1-z}+\frac{(1-v)a_r}{1-a_rz}.
+ \label{eq:prime-ea-gap-enumerator}
+\end{equation}
+Then
+\begin{equation}
+ \boxed{
+ \Pr[d_{\min}(\G)\leq L]
+ \leq
+ \sum_{r=1}^k\binom{k}{r}
+ \sum_{c=0}^{m}
+ [z^Lv^c]\frac{F_r(z,v)^m}{1-z}
+ \min\left\{1,s^{r-1-c}\right\}.
+ }
+ \label{eq:prime-ea-projective-gap-enumerator}
+\end{equation}
+Indeed, write the $L$ coordinates of $U$ as $u_a\geq0$ coordinates before
+the $a$th zero, plus a trailing part.  A gap of length $u_a+1$ is missed by
+all edges leaving $S$ with probability $a_r^{u_a+1}$.  Summing its missed and
+hit cases over $u_a$ gives $F_r$; the final factor $(1-z)^{-1}$ counts the
+trailing part.  Thus the coefficient in
+\eqref{eq:prime-ea-projective-gap-enumerator} sums the incidence probability
+of every output container with exactly $c$ hit gaps.
+
+Equation~\eqref{eq:prime-ea-projective-gap-enumerator} is rigorous but drops
+the requirement that the coordinates inside $U$ are nonzero.  This loss is
+severe for a sparse expander.  A message with $M$ active edges can change the
+accumulator state at no more than $M$ coordinates, whereas the relaxed
+container sum counts arbitrary subsets of $U$.  The RAA repair therefore has
+two indispensable parts: the surplus-cancellation factor above and a placement
+enumerator for the exact zero/nonzero accumulator trace.  The next EA bound
+must insert $s^{-(c-(r-1))_+}$ into the existing sparse run enumerator rather
+than use the container coefficient alone.
+
+That insertion has a two-state form for Bernoulli incidence.  Let
+\begin{equation}
+ u_r:=1-(1-\theta)^r
+ \label{eq:prime-ea-occupied-probability}
+\end{equation}
+be the probability that at least one edge leaves a fixed support of size $r$
+and ends at a specified expanded coordinate.  Define
+\begin{equation}
+ \mathbf K_{u}(z,v):=
+ \begin{pmatrix}
+  1-u+uv&uz\\
+  uv&z
+ \end{pmatrix}.
+ \label{eq:prime-ea-projective-trace-matrix}
+\end{equation}
+The variable $z$ marks nonzero accumulator outputs.  The variable $v$ marks
+occupied coordinates at which the accumulator state is zero.
+
+\begin{theorem}[Bernoulli trace-placement bound]
+\label{thm:prime-ea-projective-trace}
+For the labeled Bernoulli EA ensemble,
+\begin{equation}
+ \boxed{
+ \Pr[d_{\min}(\G)\leq L]
+ \leq
+ \sum_{r=1}^k\binom{k}{r}
+ \sum_{h=0}^L\sum_{a=0}^n
+ [z^hv^a]\,
+ \ev_0^{\mathsf T}\mathbf K_{u_r}(z,v)^n\boldsymbol 1
+ \min\left\{1,s^{r-1-a}\right\}.
+ }
+ \label{eq:prime-ea-projective-trace}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Fix a message support $S$ of size $r$.  Call an expanded coordinate
+\emph{occupied} when at least one edge from $S$ ends there.  The occupancy
+indicators are independent, and each has probability $u_r$.
+
+Fix the occupied coordinates and a zero/nonzero accumulator trace.  At an
+unoccupied coordinate, the accumulator state remains unchanged.  At an
+occupied coordinate, the trace specifies whether the new state is zero or
+nonzero.  Matrix \eqref{eq:prime-ea-projective-trace-matrix} enumerates these
+choices and their output weights.
+
+Suppose the trace has $a$ occupied coordinates whose new state is zero.  The
+corresponding prefix equations in the active edge labels have rank $a$.
+Indeed, subtracting consecutive equations isolates a nonempty set of fresh
+edge variables.  Lemma~\ref{lem:prime-ea-projective-surplus} therefore bounds
+the union over projective messages on $S$ by
+$\min\{1,s^{r-1-a}\}$.  Sum over traces and over the $\binom{k}{r}$ supports.
+\end{proof}
+
+The exact coefficient bound has a convenient two-piece Chernoff relaxation.
+For $z,v\in(0,1]$, define
+\begin{align}
+ A_r(z,v)
+ &:=z^{-L}v^{-(r-1)}
+   \ev_0^{\mathsf T}\mathbf K_{u_r}(z,v)^n\boldsymbol 1,
+ \label{eq:prime-ea-projective-trace-structural}\\
+ B_r(z,v)
+ &:=s^{-1}z^{-L}v^{-r}
+   \ev_0^{\mathsf T}\mathbf K_{u_r}(z,v)^n\boldsymbol 1.
+ \label{eq:prime-ea-projective-trace-field}
+\end{align}
+Then
+\begin{equation}
+ \Pr[d_{\min}(\G)\leq L]
+ \leq
+ \sum_{r=1}^k\binom{k}{r}
+ \left(
+  \inf_{0<z,v\leq1}A_r(z,v)
+  +\inf_{\substack{0<z\leq1\\s^{-1}\leq v\leq1}}B_r(z,v)
+ \right).
+ \label{eq:prime-ea-projective-trace-chernoff}
+\end{equation}
+The first term covers traces with $a\leq r-1$.  For $a\geq r$ and
+$v\geq s^{-1}$,
+\[
+ s^{r-1-a}\leq s^{-1}v^{a-r},
+\]
+which gives the second term.  This split prevents the field-weighted branch
+from reintroducing the projective factor on traces without surplus equations.
+
+At rate $1/2$, the trace bound gives promising large-field parameters.  Take
+$p=2^{127}-1$, $n=2{,}097{,}100$, and $k=1{,}048{,}550$.  The $p$-ary GV root
+is $0.492127392425$.  The following rows report floating-point support grids.
+\begin{center}
+\begin{tabular}{c|rrrl}
+ GV fraction&$L$&expected row weight&largest sampled term&support\\\hline
+ $0.995$&$1{,}026{,}880$&$143$&$-78.1186$ bits&$r=1$\\
+ floored GV&$1{,}032{,}040$&$194$&$-73.2977$ bits&$r=k$
+\end{tabular}
+\end{center}
+These rows are diagnostics, not interval certificates.  They do not control
+the unsampled support intervals.  For small fields, the ordinary per-line
+enumerator can be stronger; the final finite proof should take the smaller
+bound for each support size.
+
+\subsection{Asymptotic distance}
+
+Define the $p$-ary Hamming-shell entropy in nats by
+\begin{equation}
+ \mathsf h_p(x):=\mathsf h(x)+x\ln(p-1)
+ \label{eq:prime-shell-entropy}
+\end{equation}
+and the sparse accumulator rate by
+\begin{equation}
+ I_{p,\delta}
+ :=\left(\sqrt{1-\delta}
+          -\sqrt{\frac{\delta}{p-1}}\right)^2.
+ \label{eq:prime-ea-sparse-rate}
+\end{equation}
+
+\begin{lemma}[Prime-field endpoint exponents]
+\label{lem:prime-ea-endpoints}
+For $0<\delta<s/p$,
+\begin{align}
+ \liminf_{q\downarrow0}\frac{J^{(p)}_\delta(q)}q
+ &\geq I_{p,\delta},
+ \label{eq:prime-ea-sparse-limit}\\
+ J^{(p)}_\delta(s/p)
+ &=\ln p-\mathsf h_p(\delta).
+ \label{eq:prime-ea-dense-rate}
+\end{align}
+\end{lemma}
+
+\begin{proof}
+For the sparse endpoint, set $z=e^{-\vartheta q}$.  Expanding
+\eqref{eq:prime-ea-spectral-radius} at $q=0$ reduces the coefficient of $q$
+in \eqref{eq:prime-ea-tail-rate} to
+\[
+ \frac{1+\vartheta+1/s}{2}
+ -\frac12\sqrt{(\vartheta+1/s-1)^2+4/s}
+ -\delta\vartheta.
+\]
+Its supremum over $\vartheta\geq0$ is
+$(\sqrt{1-\delta}-\sqrt{\delta/s})^2$.
+
+At $q=s/p$, the input is uniform on $\Fbb_p$ and
+$\lambda_p(s/p,z)=(1+sz)/p$.  The optimizer is
+$z=\delta/(s(1-\delta))$.  Substitution gives
+\eqref{eq:prime-ea-dense-rate}.
+\end{proof}
+
+\begin{theorem}[Prime-field Expand--Accumulate distance]
+\label{thm:prime-ea-linear-distance}
+Fix a prime $p$.  Let $k/n\to R\in(0,1)$ and sample the labeled Bernoulli
+expander with
+\begin{equation}
+ \theta_n=C\frac{\ln n}{n}.
+ \label{eq:prime-ea-density}
+\end{equation}
+If $0<\delta<(p-1)/p$ and
+\begin{align}
+ C I_{p,\delta}&>1,
+ \label{eq:prime-ea-sparse-condition}\\
+ \mathsf h_p(\delta)&<(1-R)\ln p,
+ \label{eq:prime-ea-gv-condition}
+\end{align}
+then
+\begin{equation}
+ \Pr\left[
+  \min_{\xv\in\Fbb_p^k\setminus\{0\}}
+  \hw{\xv\B\A}\leq\lfloor\delta n\rfloor
+ \right]=o(1).
+ \label{eq:prime-ea-linear-distance-conclusion}
+\end{equation}
+Thus the labeled prime-field ensemble reaches every distance strictly below
+the $p$-ary Gilbert--Varshamov bound, subject only to the sparse density
+condition \eqref{eq:prime-ea-sparse-condition}.
+\end{theorem}
+
+\begin{proof}
+Use the three message-support ranges from the proof of
+Theorem~\ref{thm:ea-linear-distance}.  For $r\theta_n=o(1)$,
+\eqref{eq:prime-bernoulli-activation} gives
+$q^{(p)}_r=r\theta_n(1-o(1))$.  Lemma~\ref{lem:prime-ea-endpoints} and
+\eqref{eq:prime-ea-sparse-condition} therefore make the support-$r$ tail at
+most $n^{-(1+\epsilon)r}$ for some $\epsilon>0$.  The projective support count
+satisfies $N_{p,k,r}\leq(sk)^r$, so the sparse sum vanishes.
+
+Once $r\theta_n$ is bounded below, $q^{(p)}_r$ is bounded away from zero.
+Continuity and positivity of $J^{(p)}_\delta$ control supports up to
+$r=\eta n$.  The number of such projective messages has exponent at most
+$R\mathsf h(\eta/R)+\eta\ln s+o(1)$, which can be made arbitrarily small by
+choosing $\eta>0$ small.
+
+For $r>\eta n$, equation \eqref{eq:prime-bernoulli-activation} gives
+$q^{(p)}_r=s/p-o(1)$ uniformly.  The total number of projective messages is at
+most $p^k/s$.  By \eqref{eq:prime-ea-dense-rate}, their total contribution has
+exponent
+\[
+ R\ln p+\mathsf h_p(\delta)-\ln p+o(1),
+\]
+which is negative by \eqref{eq:prime-ea-gv-condition}.  All three ranges
+vanish in \eqref{eq:prime-ea-spectral-first-moment}.
+\end{proof}
+
+At rate $R=1/2$, the following values show the asymptotic trend.  The column
+$\delta_{\mathrm{GV}}$ solves
+$\mathsf h_p(\delta)=\tfrac12\ln p$, and $C_{\min}$ is the limiting sparse
+threshold $1/I_{p,\delta_{\mathrm{GV}}}$.
+\begin{center}
+\begin{tabular}{c|cc}
+ $p$&$\delta_{\mathrm{GV}}$&$C_{\min}$\\\hline
+ $2$&$0.110028$&$2.67272$\\
+ $3$&$0.159462$&$2.48437$\\
+ $5$&$0.209867$&$2.29681$\\
+ $7$&$0.237240$&$2.19795$\\
+ $17$&$0.292842$&$2.00832$
+\end{tabular}
+\end{center}
+The field increases the GV distance and, for these small primes, decreases the
+required Bernoulli row-weight constant.
+
+The quantifier ``fix a prime $p$'' is essential.  At a concrete length, the
+projective count \eqref{eq:prime-projective-support-count} contributes
+$(r-1)\ln(p-1)$ for support size $r$.  This term is constant in the
+fixed-field asymptotic proof, but it is material when $p$ is a
+cryptographic-size prime and $n$ is about $2^{20}$.  If
+$\ln p/\ln n\to\alpha>0$, the sparse counting argument requires, at minimum,
+a strengthened condition of the form $C I_{p,\delta}>1+\alpha$ in support
+ranges where $r$ grows.  The theorem above therefore justifies small fixed
+prime fields; it does not by itself justify a 128-bit field with the same
+degree.
+
+\subsection{Exact labeled regular composition}
+
+The odd-prime regular ensemble has a qualitative advantage over the binary
+one.  A binary even-weight message has even parity in every region, so the
+accumulator returns to zero at every regional boundary.  Independent nonzero
+edge labels remove that deterministic constraint.  For example, two active
+rows have zero regional sum only when their two labels satisfy one scalar
+equation, an event of probability $1/(p-1)$ rather than certainty.
+
+The exact regional transfer remains two-state.  Let
+\begin{equation}
+ \mathbf U_p(X,Y):=
+ \begin{pmatrix}
+  1&sXY\\
+  X&(1+(s-1)X)Y
+ \end{pmatrix}.
+ \label{eq:prime-ea-regular-bivariate-matrix}
+\end{equation}
+The exponent of $X$ marks nonzero inputs and the exponent of $Y$ marks
+nonzero outputs.  For a uniform $p$-ary shell of weight $u$, define
+\begin{align}
+ \mathbf S^{(p),\mathrm{acc}}_{\ell,u}(Y)
+ &:=\frac{[X^u]\mathbf U_p(X,Y)^\ell}
+          {\binom{\ell}{u}s^u},
+ \label{eq:prime-ea-regular-slice-matrix}\\
+ \mathbf R^{(p),\mathrm{acc}}_{\ell,r}(Y)
+ &:=\sum_{u=0}^\ell \rho^{(p,\ell)}_{r,u}
+       \mathbf S^{(p),\mathrm{acc}}_{\ell,u}(Y).
+ \label{eq:prime-ea-regular-region-matrix}
+\end{align}
+
+\begin{theorem}[Exact labeled regular EA first moment]
+\label{thm:prime-ea-regular-first-moment}
+Assume $n=d\ell$ and sample the labeled region-stratified left-regular
+expander.  The expected number of bad projective message lines is
+\begin{equation}
+ \boxed{
+ \mu^{(p),\mathrm{reg}}_{\mathrm{EA}}(L)
+ =\sum_{r=1}^k N_{p,k,r}\sum_{h=0}^L[Y^h]\,
+   \ev_0^{\mathsf T}
+   \mathbf R^{(p),\mathrm{acc}}_{\ell,r}(Y)^d\boldsymbol 1.
+ }
+ \label{eq:prime-ea-regular-first-moment}
+\end{equation}
+It upper-bounds the probability of minimum distance at most $L$.
+Moreover, the Poissonized bound is
+\begin{equation}
+ \Ebb_{\B}[z^{\hw{\xv\B\A}}]
+ \leq\gamma_r^d\,
+ \ev_0^{\mathsf T}
+ T^{(p)}_{q^{(p),\mathrm{reg}}_r}(z)^n\boldsymbol 1,
+ \label{eq:prime-ea-regular-poisson-mgf}
+\end{equation}
+and the dense bound is
+\begin{equation}
+ \Pr[\hw{\xv\B\A}\leq L]
+ \leq V_{p,n}(L)p^{-n}
+       (A_{p,\ell,r}+B_{p,\ell,r})^d,
+ \quad
+ V_{p,n}(L):=\sum_{h=0}^L\binom nhs^h.
+ \label{eq:prime-ea-regular-dense-bound}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Lemma~\ref{lem:prime-regular-shell-law} gives an independent mixture of
+uniform $p$-ary shells in every region.  Matrix
+\eqref{eq:prime-ea-regular-bivariate-matrix} counts all input values and keeps
+the accumulator's boundary state, so coefficient extraction and normalization
+give \eqref{eq:prime-ea-regular-first-moment}.  Equation
+\eqref{eq:prime-regular-poisson-comparison} applied to the nonnegative output
+moment gives \eqref{eq:prime-ea-regular-poisson-mgf}.  Finally, the accumulator
+is invertible.  Its output ball has $V_{p,n}(L)$ preimages, and
+Lemma~\ref{lem:prime-regular-point-mass} bounds the probability of each one.
+\end{proof}
+
+For the regular ensemble, define the per-line tail
+\begin{equation}
+ \tau^{(p),\mathrm{reg}}_r(L)
+ :=\sum_{h=0}^L[Y^h]\,
+   \ev_0^{\mathsf T}
+   \mathbf R^{(p),\mathrm{acc}}_{\ell,r}(Y)^d\boldsymbol 1.
+ \label{eq:prime-ea-regular-line-tail}
+\end{equation}
+Exactly the same support grouping gives
+\begin{equation}
+ \boxed{
+ \Pr[d_{\min}(\G)\leq L]
+ \leq
+ \sum_{r=1}^k\binom{k}{r}
+ \min\!\left\{1,
+   s^{r-1}\tau^{(p),\mathrm{reg}}_r(L)
+ \right\}.
+ }
+ \label{eq:prime-ea-regular-support-grouped}
+\end{equation}
+The same formula remains valid after replacing
+$\tau^{(p),\mathrm{reg}}_r(L)$ by the optimized Poissonized or dense upper
+bound from Theorem~\ref{thm:prime-ea-regular-first-moment}.  Thus the cap is
+applied after union-bounding the projective lines on one support, but before
+union-bounding the supports themselves.
+
+The cap in \eqref{eq:prime-ea-regular-support-grouped} can remove a large
+artificial contribution when the per-support line union already exceeds one.
+Lemma~\ref{lem:prime-ea-projective-surplus} is sharper: it charges a factor
+$s^{-1}$ only for each hit-gap equation beyond the first $r-1$.  It applies to
+regular incidence without change.  We next perform the required incidence
+average while retaining the exact accumulator trace.
+
+For $t\geq0$, let $\omega^{(\ell)}_{t,u}$ be the probability that $t$
+independent uniform draws from $[\ell]$ occupy exactly $u$ coordinates.  This
+law is specified by $\omega^{(\ell)}_{0,0}=1$ and
+\begin{equation}
+ \omega^{(\ell)}_{t+1,u}
+ =\frac{u}{\ell}\omega^{(\ell)}_{t,u}
+  +\frac{\ell-u+1}{\ell}\omega^{(\ell)}_{t,u-1},
+ \label{eq:prime-ea-regular-occupancy-law}
+\end{equation}
+where terms outside their natural range are zero.  Define the empty- and
+occupied-coordinate trace matrices
+\begin{equation}
+ \mathbf Q_0(z):=
+ \begin{pmatrix}1&0\\0&z\end{pmatrix},
+ \qquad
+ \mathbf Q_1(z,v):=
+ \begin{pmatrix}v&z\\v&z\end{pmatrix}.
+ \label{eq:prime-ea-regular-trace-inputs}
+\end{equation}
+Here $z$ marks a nonzero accumulator state and $v$ marks an occupied
+coordinate whose new state is zero.  Put
+\begin{align}
+ \mathbf S^{\mathrm{tr}}_{\ell,u}(z,v)
+ &:=\binom{\ell}{u}^{-1}[X^u]
+   \bigl(\mathbf Q_0(z)+X\mathbf Q_1(z,v)\bigr)^\ell,
+ \label{eq:prime-ea-regular-trace-slice}\\
+ \mathbf R^{\mathrm{tr}}_{\ell,r}(z,v)
+ &:=\sum_{u=0}^{\min\{r,\ell\}}
+   \omega^{(\ell)}_{r,u}\mathbf S^{\mathrm{tr}}_{\ell,u}(z,v).
+ \label{eq:prime-ea-regular-trace-region}
+\end{align}
+
+\begin{theorem}[Regular trace-placement bound]
+\label{thm:prime-ea-regular-projective-trace}
+For the labeled region-stratified left-regular EA ensemble with $n=d\ell$,
+\begin{equation}
+ \boxed{
+ \Pr[d_{\min}(\G)\leq L]
+ \leq
+ \sum_{r=1}^k\binom{k}{r}
+ \sum_{h=0}^L\sum_{a=0}^n[z^hv^a]\,
+ \ev_0^{\mathsf T}
+ \mathbf R^{\mathrm{tr}}_{\ell,r}(z,v)^d\boldsymbol 1
+ \min\{1,s^{r-1-a}\}.
+ }
+ \label{eq:prime-ea-regular-projective-trace}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Fix a message support $S$ of size $r$.  In one region, its $r$ rows make
+independent uniform endpoint choices.  Their number of occupied coordinates
+has law \eqref{eq:prime-ea-regular-occupancy-law}; conditional on that number,
+the occupied set is uniform.  Equations
+\eqref{eq:prime-ea-regular-trace-inputs}--
+\eqref{eq:prime-ea-regular-trace-region} therefore enumerate the exact
+incidence probability and every compatible zero/nonzero accumulator trace.
+The $d$ regional endpoint choices are independent, while the two-state matrix
+product carries the accumulator state across regional boundaries.
+
+If a trace has $a$ occupied coordinates whose new state is zero, its $a$
+prefix equations have rank $a$: subtracting consecutive equations isolates a
+nonempty set of fresh edge-label variables.  Lemma~
+\ref{lem:prime-ea-projective-surplus} bounds the union over the projective
+messages on $S$ by $\min\{1,s^{r-1-a}\}$.  Summing the traces and supports
+gives \eqref{eq:prime-ea-regular-projective-trace}.
+\end{proof}
+
+The exact coefficient sum admits the same two-piece Chernoff relaxation as
+the Bernoulli bound.  For $z,v\in(0,1]$, put
+\begin{align}
+ A^{\mathrm{reg}}_r(z,v)
+ &:=z^{-L}v^{-(r-1)}\ev_0^{\mathsf T}
+   \mathbf R^{\mathrm{tr}}_{\ell,r}(z,v)^d\boldsymbol 1,
+ \label{eq:prime-ea-regular-trace-structural}\\
+ B^{\mathrm{reg}}_r(z,v)
+ &:=s^{-1}z^{-L}v^{-r}\ev_0^{\mathsf T}
+   \mathbf R^{\mathrm{tr}}_{\ell,r}(z,v)^d\boldsymbol 1.
+ \label{eq:prime-ea-regular-trace-field}
+\end{align}
+Then the $r$th summand in
+\eqref{eq:prime-ea-regular-projective-trace} is at most
+\begin{equation}
+ \binom{k}{r}\left(
+  \inf_{0<z,v\leq1}A^{\mathrm{reg}}_r(z,v)
+  +\inf_{\substack{0<z\leq1\\s^{-1}\leq v\leq1}}
+   B^{\mathrm{reg}}_r(z,v)
+ \right).
+ \label{eq:prime-ea-regular-trace-chernoff}
+\end{equation}
+
+Two comparison bounds make this expression practical away from small $r$.
+Let $\bar u_r=1-e^{-r/\ell}$ and let $\gamma_r$ be the Poisson conditioning
+factor in Lemma~\ref{lem:regular-poisson-comparison}.  In
+\eqref{eq:prime-ea-regular-trace-structural} and
+\eqref{eq:prime-ea-regular-trace-field}, one may replace
+\begin{equation}
+ \ev_0^{\mathsf T}\mathbf R^{\mathrm{tr}}_{\ell,r}(z,v)^d
+ \boldsymbol 1
+ \quad\hbox{by}\quad
+ \gamma_r^d\ev_0^{\mathsf T}\mathbf K_{\bar u_r}(z,v)^n\boldsymbol 1.
+ \label{eq:prime-ea-regular-trace-poisson}
+\end{equation}
+This follows by Poissonizing the $r$ endpoint draws independently in every
+region and then conditioning each regional total to equal $r$.
+
+The fixed Poisson mean is not necessary.  The exact regional transfer has the
+exponential-generating-function representation
+\begin{equation}
+ \mathbf R^{\mathrm{tr}}_{\ell,r}(z,v)
+ =\frac{r!}{\ell^r}[t^r]
+  \bigl(\mathbf Q_0(z)+(e^t-1)\mathbf Q_1(z,v)\bigr)^\ell.
+ \label{eq:prime-ea-regular-trace-egf}
+\end{equation}
+Hence, for every $t>0$, it is bounded entrywise by
+\begin{equation}
+ \frac{r!}{\ell^rt^r}
+  \bigl(\mathbf Q_0(z)+(e^t-1)\mathbf Q_1(z,v)\bigr)^\ell.
+ \label{eq:prime-ea-regular-trace-saddle}
+\end{equation}
+Substituting \eqref{eq:prime-ea-regular-trace-saddle} into
+\eqref{eq:prime-ea-regular-trace-structural} and
+\eqref{eq:prime-ea-regular-trace-field} gives a third Chernoff marker, which
+can be optimized jointly with $z$ and $v$.  The choice $t=r/\ell$ recovers
+\eqref{eq:prime-ea-regular-trace-poisson}.  Optimizing $t$ can therefore only
+improve the fixed-mean Poisson comparison.
+
+There is also a comparison without a conditioning penalty.  Set
+$\beta_r=(1-1/\ell)^r$ and
+\begin{equation}
+ \mathbf D_r(z,v):=\beta_r\mathbf Q_0(z)+\mathbf Q_1(z,v).
+ \label{eq:prime-ea-regular-trace-dense-matrix}
+\end{equation}
+For a prescribed set $E$ of empty coordinates, with $e_g$ of them in region
+$g$, the regular incidence law satisfies
+\[
+ \Pr[E\text{ is empty}]
+ =\prod_{g=1}^d(1-e_g/\ell)^r
+ \leq \prod_{g=1}^d(1-1/\ell)^{re_g}
+ =\beta_r^{|E|}.
+\]
+Consequently, the same replacement is valid with
+\begin{equation}
+ \ev_0^{\mathsf T}\mathbf D_r(z,v)^n\boldsymbol 1.
+ \label{eq:prime-ea-regular-trace-dense}
+\end{equation}
+The dense matrix is not stochastic; it upper-bounds each exact empty-set
+probability before summing the compatible traces.  The exact transfer is best
+for the first few support sizes, the Poisson comparison covers intermediate
+sizes, and \eqref{eq:prime-ea-regular-trace-dense} avoids the accumulated
+conditioning cost for dense supports.
+
+Floating-point scans suggest that the removal of the binary regional-reset
+constraint is quantitatively useful.  At rate $1/2$ and length near $2^{21}$,
+the following candidates retain $99.5\%$ of the corresponding $p$-ary GV
+distance.
+\begin{center}
+\begin{tabular}{c|rrrr}
+ $p$&$d$&$\ell$&$L$&$L/n$\\\hline
+ $3$&$44$&$47{,}662$&$332{,}739$&$0.1586641$\\
+ $5$&$34$&$61{,}680$&$437{,}916$&$0.2088178$
+\end{tabular}
+\end{center}
+For the ternary row, exact regional terms through support $24$, sampled
+Poisson terms above it, and sampled dense Fourier terms are all below
+$2^{-23.4}$.  For the quinary row, exact terms through support $48$ are below
+$2^{-24.1}$ and the sampled remaining bounds are below $2^{-41.4}$.  These
+are parameter diagnostics, not complete interval certificates: the unsampled
+support intervals and outward rounding remain to be checked.  Relative to the
+certified binary regular degree $64$, the candidate degrees reduce the edge
+count by $31.25\%$ and $46.875\%$, respectively.
+
+The projective trace bound also makes a direct large-field comparison
+possible.  For $p=2^{127}-1$ and rate $1/2$, a floating-point scan that uses
+the exact regional transfer through $r=5$, the Poisson comparison at
+intermediate supports, and the dense empty-set bound near $r=k$ gives
+\begin{center}
+\begin{tabular}{c|rrrrrl}
+ target&$d$&$\ell$&$n$&$L$&largest sampled term\\\hline
+ $0.995\,\delta_{\mathrm{GV}}$&$143$&$14{,}666$&$2{,}097{,}238$
+   &$1{,}026{,}947$&$-300.7780$ bits at $r=6$\\
+ $\lfloor n\delta_{\mathrm{GV}}\rfloor-1$&$193$&$10{,}866$
+   &$2{,}097{,}138$&$1{,}032{,}058$&$-98.2633$ bits at $r=k$
+\end{tabular}
+\end{center}
+These remain support-grid diagnostics, not interval certificates.  Regularity
+makes the first few support terms extremely small; for example, in the first
+row the exact $r=1$ term is below $2^{-4860}$.  It does not reduce the degree
+at these two large-field targets, however, because the dense full-support
+term determines the frontier and is nearly the same as for Bernoulli
+incidence.
+
+\subsection{Two-sided regular incidence}
+
+The preceding dense obstruction comes from rare output coordinates that no
+active row hits.  Left regularity does not prevent those coordinates.  A
+balanced regional ensemble removes them at full message support while
+retaining an exact coefficient transfer.
+
+Assume rate $1/2$, let $d$ be even, and write
+$n=d\ell$, $k=n/2$, and $q=k/\ell=d/2$.  In each region, sample a uniform
+permutation of the $k$ input rows into $k$ labeled slots.  Partition those
+slots into $\ell$ groups of size $q$, and connect each row to the output
+coordinate of its group.  Sample the edge labels independently in
+$\Fbb_p^*$.  Thus every input row has one edge in every region, and every
+output coordinate has exactly $q$ incident edges.
+
+For a fixed input support of size $r$, the active slots in each region form a
+uniform $r$-subset of the $k$ slots.  Therefore its exact regional trace
+matrix is
+\begin{equation}
+ \mathbf R^{\mathrm{bi}}_{\ell,q,r}(z,v)
+ :=\binom{k}{r}^{-1}[X^r]
+ \left(
+  \mathbf Q_0(z)+\bigl((1+X)^q-1\bigr)\mathbf Q_1(z,v)
+ \right)^\ell.
+ \label{eq:prime-ea-biregular-trace-region}
+\end{equation}
+
+\begin{theorem}[Two-sided regular trace bound]
+\label{thm:prime-ea-biregular-projective-trace}
+For the balanced regional ensemble above,
+\begin{equation}
+ \Pr[d_{\min}(\G)\leq L]
+ \leq
+ \sum_{r=1}^k\binom{k}{r}
+ \sum_{h=0}^L\sum_{a=0}^n[z^hv^a]\,
+ \ev_0^{\mathsf T}
+ \mathbf R^{\mathrm{bi}}_{\ell,q,r}(z,v)^d\boldsymbol 1
+ \min\{1,s^{r-1-a}\}.
+ \label{eq:prime-ea-biregular-projective-trace}
+\end{equation}
+For every $x>0$, the regional matrix is bounded entrywise by
+\begin{equation}
+ \mathbf R^{\mathrm{bi}}_{\ell,q,r}(z,v)
+ \preceq
+ \frac{x^{-r}}{\binom{k}{r}}
+ \left(
+  \mathbf Q_0(z)+\bigl((1+x)^q-1\bigr)\mathbf Q_1(z,v)
+ \right)^\ell.
+ \label{eq:prime-ea-biregular-trace-saddle}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Fix the input support.  A regional permutation maps it to a uniform set of
+$r$ slots.  An output coordinate is empty when none of its $q$ slots is
+active.  If exactly $j\geq1$ slots are active, the trace matrix remains
+$\mathbf Q_1$ and the slot choices contribute $\binom qjX^j$.  This gives
+\eqref{eq:prime-ea-biregular-trace-region}.  The proof of Theorem~
+\ref{thm:prime-ea-regular-projective-trace} then gives
+\eqref{eq:prime-ea-biregular-projective-trace}.  Finally, all matrix
+coefficients are nonnegative, so positive-marker coefficient extraction gives
+\eqref{eq:prime-ea-biregular-trace-saddle}.
+\end{proof}
+
+The coefficient saddle also yields a finite block bound.  Fix $x,z,v>0$ on
+an interval $I=[a,b]$ of message-support sizes.  After the union over input
+supports, the only $r$-dependent prefactor is
+\begin{equation}
+ g_r:=\binom{k}{r}^{1-d}(x^dv)^{-r}.
+ \label{eq:prime-ea-biregular-block-factor}
+\end{equation}
+The function $r\mapsto\log g_r$ is convex because
+$r\mapsto\log\binom kr$ is concave and $1-d<0$.  Hence
+\begin{equation}
+ \sum_{r=a}^b g_r
+ \leq |I|\max\{g_a,g_b\}
+ \leq |I|(g_a+g_b).
+ \label{eq:prime-ea-biregular-block-bound}
+\end{equation}
+The last expression avoids an interval comparison between $g_a$ and $g_b$.
+It can be evaluated directly with outward-rounded arithmetic.  The structural
+branch multiplies it by $v$; the field branch multiplies it by $s^{-1}$.
+
+\begin{theorem}[Finite two-sided regular EA certificate]
+\label{thm:prime-ea-biregular-finite-certificate}
+Let $p=2^{127}-1$, and consider the two-sided regular ensemble with
+\[
+ d=30,\qquad q=15,\qquad \ell=69{,}905,\qquad
+ n=2{,}097{,}150,\qquad k=1{,}048{,}575.
+\]
+For $L=1{,}032{,}064$,
+\begin{equation}
+ \boxed{
+ \Pr[d_{\min}(\G)\leq L]
+ <9.499\cdot10^{-10}<2^{-29.97}.
+ }
+ \label{eq:prime-ea-biregular-finite-certificate}
+\end{equation}
+The cutoff equals $\lfloor n\delta_{\mathrm{GV}}\rfloor$ for the rate-$1/2$
+$p$-ary GV root $\delta_{\mathrm{GV}}=0.492127392425\ldots$.
+\end{theorem}
+
+The certificate evaluates every $1\leq r\leq64$ with the exact regional
+matrix \eqref{eq:prime-ea-biregular-trace-region}.  Twelve applications of
+\eqref{eq:prime-ea-biregular-block-bound} cover $65\leq r<k$, and the verifier
+checks $r=k$ directly.  At 192-bit Arb precision, the three contributions are
+bounded by
+\[
+ 7.319\cdot10^{-30},\qquad
+ 9.499\cdot10^{-10},\qquad
+ 1.036\cdot10^{-75}.
+\]
+The verifier treats the floating-point optimizer's decimal markers as fixed
+inputs.  Thus floating-point arithmetic affects efficiency, but not the
+validity of \eqref{eq:prime-ea-biregular-finite-certificate}.  Degree $28$
+has negative selected exact terms, but its present coefficient bound is
+positive at the exact-to-saddle transition.
+
+\subsection{Prime-field random convolution}
+
+The accumulator certificate motivates the corresponding Expand--Convolute
+question.  We randomize the feedback coefficients over the full field.  This
+choice preserves the reduced state used in the binary proof.  Restricting
+every coefficient to $\Fbb_p^*$ would instead make the transition law depend
+on the support and values of the convolution state.
+
+Fix a memory $m\geq1$.  Independently sample
+$\boldsymbol\alpha_t\gets\Fbb_p^m$ for every $t\in[n]$.  Given
+$\mathbf u\in\Fbb_p^n$, set $y_j:=0$ for $j\leq0$ and compute
+\begin{equation}
+ y_t:=u_t+\left\langle\boldsymbol\alpha_t,
+       (y_{t-1},\ldots,y_{t-m})\right\rangle,
+ \qquad t\in[n].
+ \label{eq:prime-ec-recurrence}
+\end{equation}
+Write $\C_{\boldsymbol\alpha}$ for this nonwrapping convolution.  Every
+realization is invertible because the coefficient of $u_t$ is one.
+
+Index the transfer states by $0,\ldots,m$.  State $j<m$ records exactly $j$
+trailing zero outputs, while state $m$ means that the convolution state is
+zero.  Let $\mathbf e_m$ be the unit vector for state $m$, let
+$\boldsymbol 1$ be the all-one vector, and put $s=p-1$.  The transfer below
+counts constraints; its entries are not transition probabilities.  Define
+the empty-coordinate matrix $\mathbf Q^{\mathrm{ec}}_0(z,v)$ and the
+occupied-coordinate matrix $\mathbf Q^{\mathrm{ec}}_1(z,v)$ by the following
+nonzero entries:
+\begin{align}
+ (\mathbf Q^{\mathrm{ec}}_b)_{j,0}
+   &=z,
+ &
+ (\mathbf Q^{\mathrm{ec}}_b)_{j,j+1}
+   &=v
+ &&(b\in\{0,1\},\ 0\leq j<m),
+ \label{eq:prime-ec-active-constraint-trace}\\
+ (\mathbf Q^{\mathrm{ec}}_0)_{m,m}&=1,
+ &
+ (\mathbf Q^{\mathrm{ec}}_1)_{m,0}&=z,
+ &
+ (\mathbf Q^{\mathrm{ec}}_1)_{m,m}&=v.
+ \label{eq:prime-ec-zero-constraint-trace}
+\end{align}
+The marker $z$ records a nonzero output.  The marker $v$ records an occupied
+zero event that imposes an equation in fresh randomness.  Such an event
+occurs either when a nonzero convolution state produces zero or when an
+occupied expander coordinate produces zero in state $m$.
+
+Use the two-sided regular expander from
+Theorem~\ref{thm:prime-ea-biregular-projective-trace}.  For a message support
+of size $r$, define its regional convolution trace by
+\begin{equation}
+ \mathbf R^{\mathrm{bi,ec}}_{\ell,q,r}(z,v)
+ :=\binom{k}{r}^{-1}[X^r]
+ \left(
+ \mathbf Q^{\mathrm{ec}}_0(z,v)
+  +\bigl((1+X)^q-1\bigr)\mathbf Q^{\mathrm{ec}}_1(z,v)
+ \right)^\ell.
+ \label{eq:prime-ec-biregular-region}
+\end{equation}
+
+\begin{theorem}[Two-sided regular prime-field EC constraint-trace bound]
+\label{thm:prime-ec-biregular-projective-trace}
+Independently sample the balanced labeled expander $\B$ and the convolution
+$\C_{\boldsymbol\alpha}$ from \eqref{eq:prime-ec-recurrence}.  Set
+$\G:=\B\C_{\boldsymbol\alpha}$.  Then
+\begin{equation}
+ \boxed{
+ \Pr[d_{\min}(\G)\leq L]
+ \leq
+ \sum_{r=1}^k\binom{k}{r}
+ \sum_{h=0}^L\sum_{a=0}^n[z^hv^a]\,
+ \mathbf e_m^{\mathsf T}
+ \mathbf R^{\mathrm{bi,ec}}_{\ell,q,r}(z,v)^d\boldsymbol 1
+ \min\{1,s^{r-1-a}\}.
+ }
+ \label{eq:prime-ec-biregular-projective-trace}
+\end{equation}
+For every $x>0$, one may replace the regional matrix entrywise by
+\begin{equation}
+ \frac{x^{-r}}{\binom{k}{r}}
+ \left(
+  \mathbf Q^{\mathrm{ec}}_0(z)
+  +\bigl((1+x)^q-1\bigr)\mathbf Q^{\mathrm{ec}}_1(z,v)
+ \right)^\ell.
+ \label{eq:prime-ec-biregular-saddle}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Fix a message support of size $r$, one projective message line on that
+support, and one zero--nonzero output trace.  Expose the randomness in time
+order.  If the convolution state is nonzero and the next output is zero,
+then \eqref{eq:prime-ec-recurrence} imposes one nontrivial affine equation on
+the fresh vector $\boldsymbol\alpha_t$.  Its conditional probability is
+$1/p\leq1/s$.  This is the transition marked by $v$ in
+\eqref{eq:prime-ec-active-constraint-trace}.  We bound the complementary
+nonzero event by one and mark its output weight by $z$.
+
+If the convolution state is zero, the next output is the expander symbol.
+An empty coordinate remains in state $m$.  At an occupied coordinate, a zero
+symbol imposes one nontrivial linear equation on edge labels used only at
+that coordinate.  Conditioning on all but one nonzero label bounds its
+probability by $1/s$.  This is the transition marked by $v$ in
+\eqref{eq:prime-ec-zero-constraint-trace}.  A nonzero symbol moves to state
+zero and contributes $z$.
+
+Every marked event uses a fresh feedback vector or fresh coordinate labels.
+Consequently, a trace with $a$ marks has probability at most $s^{-a}$ for
+the fixed projective line.  There are $s^{r-1}$ projective message lines on
+the support.  The union bound, capped by one, is therefore
+$\min\{1,s^{r-1-a}\}$.  Averaging the balanced incidence pattern gives
+\eqref{eq:prime-ec-biregular-region}.  Matrix multiplication retains the
+convolution state across regional boundaries.  Summing over traces, supports,
+and output weights proves
+\eqref{eq:prime-ec-biregular-projective-trace}.  Positive-marker coefficient
+extraction proves \eqref{eq:prime-ec-biregular-saddle}.
+\end{proof}
+
+The trace above treats every occupied right coordinate alike.  The balanced
+expander supplies one additional distinction.  A coordinate incident to
+exactly one supported message symbol cannot vanish because both the message
+symbol and its edge label are nonzero.  Define
+\(\mathbf Q^{\mathrm{ec}}_{\mathrm{col}}:=
+\mathbf Q^{\mathrm{ec}}_1\).  Define the singleton matrix
+\(\mathbf Q^{\mathrm{ec}}_{\mathrm{sg}}\) to agree with
+\(\mathbf Q^{\mathrm{ec}}_1\), except that
+\begin{equation}
+ (\mathbf Q^{\mathrm{ec}}_{\mathrm{sg}})_{m,m}:=0.
+ \label{eq:prime-ec-singleton-matrix}
+\end{equation}
+Thus a singleton coordinate in state $m$ must produce a nonzero output.
+For a message support of size $r$, put
+\begin{equation}
+ \widehat{\mathbf R}^{\mathrm{bi,ec}}_{\ell,q,r}(z,v)
+ :=\binom{k}{r}^{-1}[X^r]
+ \left(
+  \mathbf Q^{\mathrm{ec}}_0
+  +qX\mathbf Q^{\mathrm{ec}}_{\mathrm{sg}}
+  +\bigl((1+X)^q-1-qX\bigr)
+     \mathbf Q^{\mathrm{ec}}_{\mathrm{col}}
+ \right)^\ell.
+ \label{eq:prime-ec-singleton-region}
+\end{equation}
+
+\begin{corollary}[Singleton-refined EC trace]
+\label{cor:prime-ec-singleton-trace}
+Theorem~\ref{thm:prime-ec-biregular-projective-trace} remains valid when
+\(\mathbf R^{\mathrm{bi,ec}}_{\ell,q,r}\) is replaced by
+\(\widehat{\mathbf R}^{\mathrm{bi,ec}}_{\ell,q,r}\).
+For positive coefficient extraction, define
+\begin{equation}
+ \widehat{\mathbf M}(x,z,v)
+ :=\mathbf Q^{\mathrm{ec}}_0
+   +qx\mathbf Q^{\mathrm{ec}}_{\mathrm{sg}}
+   +\bigl((1+x)^q-1-qx\bigr)
+      \mathbf Q^{\mathrm{ec}}_{\mathrm{col}}.
+ \label{eq:prime-ec-singleton-saddle-matrix}
+\end{equation}
+\par\noindent
+Then the entrywise saddle bound replaces the regional matrix by
+\begin{equation*}
+ \frac{x^{-r}}{\binom{k}{r}}\widehat{\mathbf M}(x,z,v)^\ell.
+\end{equation*}
+\end{corollary}
+
+\begin{proof}
+Fix one region and condition on its assignment of the $r$ supported rows to
+the $k=q\ell$ slots.  A right coordinate receives zero, one, or at least two
+supported slots.  These cases contribute the three terms in
+\eqref{eq:prime-ec-singleton-region}.  In the singleton case, the expander
+symbol is the product of two nonzero field elements.  Hence the zero
+transition from state $m$ is impossible.  All remaining transitions use the
+bounds from Theorem~\ref{thm:prime-ec-biregular-projective-trace}.
+\end{proof}
+
+The structural branch can still be loose at small support because its
+equation marker also counts traces with $a\geq r$.  We isolate the traces
+with $a<r$ before applying a marker.  For a fixed support of size $r$, call a
+region \emph{singleton-free} if no right coordinate receives exactly one
+supported slot.  Let $U_r$ be the number of occupied right coordinates after
+a uniform $r$-subset of the $q\ell$ regional slots is selected, and define
+\begin{equation}
+ \beta_r:=\Pr[U_r\leq\lfloor r/2\rfloor].
+ \label{eq:prime-ec-singleton-free-probability}
+\end{equation}
+A singleton-free region has at most $\lfloor r/2\rfloor$ occupied
+coordinates.  Hence $\beta_r$ upper-bounds its probability.
+
+\begin{lemma}[Singleton-free-region bound]
+\label{lem:prime-ec-singleton-free-regions}
+Fix a support size $r$ and consider traces with $a\leq r-1$ fresh equations.
+Put
+\begin{align}
+ J_r&:=1+\left\lfloor\frac{r-1}{m}\right\rfloor,\\
+ b_r&:=\left\lceil\frac{n-L-(r-1)}{\ell}\right\rceil-2J_r.
+ \label{eq:prime-ec-required-singleton-free-regions}
+\end{align}
+If $b_r>0$, the contribution of these traces to
+\eqref{eq:prime-ec-biregular-projective-trace} is at most
+\begin{equation}
+ \binom{k}{r}\binom{d}{b_r}\beta_r^{b_r}.
+ \label{eq:prime-ec-singleton-free-region-bound}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+The convolution begins in state $m$.  Each later entry into state $m$
+requires $m$ consecutive zero outputs from a nonzero state.  Those outputs
+impose $m$ fresh equations.  A trace with $a\leq r-1$ therefore has at most
+$J_r$ maximal intervals in state $m$.
+
+A state-$m$ interval can meet at most two regions that contain a singleton
+coordinate.  Otherwise the interval encounters a singleton coordinate in a
+fully traversed region and ends there.  If $B$ regions are singleton-free,
+the state-$m$ intervals contain at most $(2J_r+B)\ell$ coordinates.  The
+remaining zero outputs occur outside state $m$ and impose fresh equations.
+Thus a trace with output weight at most $L$ satisfies
+\[
+ n-L\leq (2J_r+B)\ell+a
+       \leq (2J_r+B)\ell+r-1.
+\]
+It follows that $B\geq b_r$.  Regional permutations are independent, and
+each region is singleton-free with probability at most $\beta_r$.  A union
+bound over $b_r$ regions gives
+\eqref{eq:prime-ec-singleton-free-region-bound}.
+\end{proof}
+
+For completeness, we record how the finite verifier avoids a support-by-support
+union-bound loss.  For an integer interval $I\subseteq[1,k]$, define
+\begin{align}
+ \mathcal U_I^{\mathrm{str}}(z,v)
+ &:={z^{-L}}\sum_{r\in I}\binom{k}{r}
+ \mathbf e_m^{\mathsf T}
+ \widehat{\mathbf R}^{\mathrm{bi,ec}}_{\ell,q,r}(z,v)^d\boldsymbol 1
+ v^{-(r-1)},
+ \label{eq:prime-ec-exact-band-structural}\\
+ \mathcal U_I^{\mathrm{fld}}(z,v)
+ &:={s^{-1}z^{-L}}\sum_{r\in I}\binom{k}{r}
+ \mathbf e_m^{\mathsf T}
+ \widehat{\mathbf R}^{\mathrm{bi,ec}}_{\ell,q,r}(z,v)^d\boldsymbol 1
+ v^{-r}.
+ \label{eq:prime-ec-exact-band-field}
+\end{align}
+The first expression is valid for $0<z,v\leq1$.  The second is valid for
+$0<z\leq1$ and $s^{-1}\leq v\leq1$.  Thus, for independently selected
+valid marker pairs $(z_{\mathrm{str}},v_{\mathrm{str}})$ and
+$(z_{\mathrm{fld}},v_{\mathrm{fld}})$, the exact band bound is
+\begin{equation}
+ \mathcal U_I^{\mathrm{str}}(z_{\mathrm{str}},v_{\mathrm{str}})
+ +\mathcal U_I^{\mathrm{fld}}(z_{\mathrm{fld}},v_{\mathrm{fld}}).
+ \label{eq:prime-ec-exact-band}
+\end{equation}
+Indeed, the first summand dominates the traces with $a\leq r-1$, and the
+second dominates those with $a\geq r$.  Each marker pair bounds its branch
+for an entire finite support band.  The verifier constructs all normalized
+regional coefficients in that band from one truncated matrix polynomial.
+
+Larger intervals use convex endpoint domination.  Put
+\begin{align}
+ g_r(x,v)&:=\binom{k}{r}^{1-d}(x^dv)^{-r}.
+\end{align}
+For $I=[r_0,r_1]\subseteq[1,k-1]$, the structural and field contributions
+are at most, respectively,
+\begin{align}
+ |I|vz^{-L}\mathbf e_m^{\mathsf T}\widehat{\mathbf M}(x,z,v)^n\boldsymbol 1
+   \bigl(g_{r_0}(x,v)+g_{r_1}(x,v)\bigr),
+ \label{eq:prime-ec-structural-block}\\
+ \frac{|I|}{s}z^{-L}\mathbf e_m^{\mathsf T}\widehat{\mathbf M}(x,z,v)^n\boldsymbol 1
+   \bigl(g_{r_0}(x,v)+g_{r_1}(x,v)\bigr).
+ \label{eq:prime-ec-field-block}
+\end{align}
+The two lines may use different positive markers.  To justify the endpoint
+step, observe that
+$\ln g_r=(1-d)\ln\binom{k}{r}-r\ln(x^dv)$ is convex in $r$.
+
+\begin{corollary}[Finite rate-half prime-field EC certificate]
+\label{cor:prime-ec-biregular-finite-certificate}
+Let $p=2^{127}-1$, $d=26$, $q=13$, $\ell=80{,}659$,
+$n=2{,}097{,}134$, $k=1{,}048{,}567$, and $m=4$.  Let
+$\delta_{\mathrm{GV}}$ solve
+$\mathsf h_p(\delta_{\mathrm{GV}})=\tfrac12\ln p$, and set
+$L=\lfloor n\delta_{\mathrm{GV}}\rfloor=1{,}032{,}057$.  Then
+\begin{equation}
+ \Pr[d_{\min}(\B\C_{\boldsymbol\alpha})\leq L]
+ \leq 3.052485\cdot10^{-22}
+ <2^{-71.4724}<2^{-20}.
+ \label{eq:prime-ec-biregular-finite-certificate}
+\end{equation}
+\end{corollary}
+
+\begin{proof}
+The outward-rounded verifier applies \eqref{eq:prime-ec-exact-band} to eleven
+intervals covering $[1,800]$.  Their sum is at most
+$3.052485\cdot10^{-22}$.  It applies
+\eqref{eq:prime-ec-structural-block} and
+\eqref{eq:prime-ec-field-block} to $26$ intervals covering $[801,k-1]$.
+Their sum is at most $1.005\cdot10^{-62}$.  Direct evaluation of the
+full-support transfer adds less than $2.770\cdot10^{-42}$.  Summing the three
+outward-rounded quantities proves
+\eqref{eq:prime-ec-biregular-finite-certificate}.
+\end{proof}
+
+The certificate stores only fixed decimal markers and integer interval
+endpoints.  Floating-point optimization is outside the trusted base.  The
+Arb verifier recomputes every matrix, binomial coefficient, exponentiation,
+and comparison at 256-bit precision.  From the \texttt{enumerator\_paper}
+directory, it is run with
+\begin{verbatim}
+python scripts/prime_field_biregular_ec_singleton_certificate.py \
+  verify CERTIFICATE
+\end{verbatim}
+Here \texttt{CERTIFICATE} denotes
+\path{results/prime_field_biregular_ec_p127_rate_half_d26_m4_singleton_gv.json}.
+
+The preceding certificate minimizes the simple work proxy $d+m$ but does not
+minimize the expander degree.  Increasing the convolution memory by two permits
+two fewer expander edges per input coordinate.
+
+\begin{corollary}[Lower-degree rate-half prime-field EC certificate]
+\label{cor:prime-ec-biregular-d24-m6-certificate}
+Let $p=2^{127}-1$, $d=24$, $q=12$, $\ell=87{,}381$,
+$n=2{,}097{,}144$, $k=1{,}048{,}572$, and $m=6$.  Let
+$\delta_{\mathrm{GV}}$ solve
+$\mathsf h_p(\delta_{\mathrm{GV}})=\tfrac12\ln p$, and set
+$L=\lfloor n\delta_{\mathrm{GV}}\rfloor=1{,}032{,}062$.  Then
+\begin{equation}
+ \Pr[d_{\min}(\B\C_{\boldsymbol\alpha})\leq L]
+ \leq 1.285949\cdot10^{-12}
+ <2^{-39.5003}<2^{-20}.
+ \label{eq:prime-ec-biregular-d24-m6-certificate}
+\end{equation}
+\end{corollary}
+
+\begin{proof}
+The verifier uses $17$ applications of \eqref{eq:prime-ec-exact-band} to cover
+$[1,700]$.  Their sum is at most
+$1.285949\cdot10^{-12}$.  The interval $[225,256]$ contributes the largest
+term, which is at most $1.211048\cdot10^{-12}$.  The verifier applies
+\eqref{eq:prime-ec-structural-block} and \eqref{eq:prime-ec-field-block} to
+$30$ intervals covering $[701,k-1]$.  Their sum is at most
+$1.392\cdot10^{-60}$.  Direct evaluation of the full-support transfer adds
+less than $2.840\cdot10^{-39}$.  Summing these three outward-rounded
+quantities proves \eqref{eq:prime-ec-biregular-d24-m6-certificate}.
+\end{proof}
+
+The lower-degree certificate is verified from the \texttt{enumerator\_paper}
+directory with
+\begin{verbatim}
+python scripts/prime_field_biregular_ec_d24_m6_certificate.py \
+  verify CERTIFICATE24
+\end{verbatim}
+The symbol \texttt{CERTIFICATE24} denotes the following file.
+\begin{flushleft}\small
+\path{results/prime_field_biregular_ec_p127_rate_half_d24_m6_singleton_gv.json}
+\end{flushleft}
+
+The preceding Chernoff split counts high-equation traces in its structural
+branch.  Lemma~\ref{lem:prime-ec-singleton-free-regions} removes this slack
+at small support and permits two fewer expander edges.
+
+\begin{corollary}[Degree-22 rate-half prime-field EC certificate]
+\label{cor:prime-ec-biregular-d22-m12-certificate}
+Let $p=2^{127}-1$, $d=22$, $q=11$, $\ell=95{,}325$,
+$n=2{,}097{,}150$, $k=1{,}048{,}575$, and $m=12$.  Let
+$\delta_{\mathrm{GV}}$ solve
+$\mathsf h_p(\delta_{\mathrm{GV}})=\tfrac12\ln p$, and set
+$L=\lfloor n\delta_{\mathrm{GV}}\rfloor=1{,}032{,}064$.  Then
+\begin{equation}
+ \Pr[d_{\min}(\B\C_{\boldsymbol\alpha})\leq L]
+ \leq 6.071992\cdot10^{-9}
+ <2^{-27.2951}<2^{-20}.
+ \label{eq:prime-ec-biregular-d22-m12-certificate}
+\end{equation}
+\end{corollary}
+
+\begin{proof}
+For supports $1\leq r\leq48$, the verifier applies
+Lemma~\ref{lem:prime-ec-singleton-free-regions} to the branch $a<r$.  It
+applies \eqref{eq:prime-ec-exact-band-field} to the branch $a\geq r$.
+The verifier then applies \eqref{eq:prime-ec-exact-band} to $21$ intervals
+covering $[49,1400]$.  The interval $[481,520]$ contributes the largest term,
+which is at most $4.759588\cdot10^{-9}$.
+
+The verifier applies \eqref{eq:prime-ec-structural-block} and
+\eqref{eq:prime-ec-field-block} to $26$ intervals covering $[1401,k-1]$.
+Their sum is at most $6.868\cdot10^{-98}$.  The full-support term is less than
+$1.036\cdot10^{-75}$.  Summing the outward-rounded quantities proves
+\eqref{eq:prime-ec-biregular-d22-m12-certificate}.
+\end{proof}
+
+The degree-$22$ certificate is verified with
+\begin{verbatim}
+python scripts/prime_field_biregular_ec_d22_m12_certificate.py \
+  verify CERTIFICATE22
+\end{verbatim}
+where \texttt{CERTIFICATE22} denotes
+\begin{flushleft}\small
+\path{results/prime_field_biregular_ec_p127_rate_half_d22_m12_region_gv.json}.
+\end{flushleft}
+
+Table~\ref{tab:prime-ec-memory-degree-frontier} records the observed tradeoff
+between convolution memory and expander degree.  The scan uses even $d$
+because rate one half requires the right degree $q=d/2$.
+\begin{table}[H]
+\centering
+\caption{Observed memory--degree frontier at rate one half, length near
+$2^{21}$, and the floored $p$-ary GV cutoff.  Certified rows bound the
+complete support range with 256-bit Arb arithmetic.  Diagnostic rows report
+the best candidate found by the exact-term scan.}
+\label{tab:prime-ec-memory-degree-frontier}
+\begin{tabular}{c|c|c|c|l}
+memory $m$ & left degree $d$ & right degree $q$ & $d+m$ & status \\ \hline
+1  & 38 & 19 & 39 & diagnostic \\
+2  & 30 & 15 & 32 & diagnostic; narrow margin \\
+3  & 28 & 14 & 31 & certified; $27.65$ bits \\
+4  & 26 & 13 & 30 & certified; $71.47$ bits \\
+6  & 24 & 12 & 30 & certified; $39.50$ bits \\
+12 & 22 & 11 & 34 & certified; $27.30$ bits
+\end{tabular}
+\end{table}
+
+The middle of the table gives the smallest value of the work proxy $d+m$.
+Memory four and memory six both give $d+m=30$.  The returns then diminish:
+memory twelve reaches degree $22$ only after separating the low-equation
+traces from the structural Chernoff bound.
+It does not reach degree $20$ by memory $21=\lceil\log_2 n\rceil$.  At
+$d=20$, $m=21$, and support $512$, the exact structural upper bound is
+$2^{131.90}$.  A positive upper bound does not imply that the ensemble
+fails; it identifies a parameter point not certified by this analysis.

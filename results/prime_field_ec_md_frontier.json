@@ -1,0 +1,62 @@
+{
+  "prime": "170141183460469231731687303715884105727",
+  "target_length": 2097152,
+  "rate": 0.5,
+  "distance": "floored p-ary GV",
+  "target_failure_bits": 20,
+  "frontier_anchors": [
+    {
+      "memory": 1,
+      "left_degree": 38,
+      "right_degree": 19,
+      "status": "diagnostic",
+      "comment": "Degree 36 has an optimized exact point above the 20-bit target; degree 38 sampled sparse points are below -32 bits."
+    },
+    {
+      "memory": 2,
+      "left_degree": 30,
+      "right_degree": 15,
+      "status": "diagnostic-marginal",
+      "comment": "The two leading exact point bounds are -21.61 and -24.95 bits; a full band certificate is still required."
+    },
+    {
+      "memory": 3,
+      "left_degree": 28,
+      "right_degree": 14,
+      "status": "certified",
+      "failure_bits": 27.64864915445613
+    },
+    {
+      "memory": 4,
+      "left_degree": 26,
+      "right_degree": 13,
+      "status": "certified",
+      "failure_bits": 71.47243411631074
+    },
+    {
+      "memory": 6,
+      "left_degree": 24,
+      "right_degree": 12,
+      "status": "certified",
+      "failure_bits": 39.50030420796769,
+      "comment": "The complete support range is certified with 256-bit Arb arithmetic."
+    },
+    {
+      "memory": 12,
+      "left_degree": 22,
+      "right_degree": 11,
+      "status": "certified",
+      "failure_bits": 27.295183030850587,
+      "comment": "The low-equation branch uses the singleton-free-region lemma. The complete support range is certified with 256-bit Arb arithmetic."
+    }
+  ],
+  "lower_degree_check": {
+    "memory": 21,
+    "left_degree": 20,
+    "right_degree": 10,
+    "status": "not_certified",
+    "support": 512,
+    "exact_structural_log2_bound": 131.8962670381861,
+    "comment": "The present analysis does not reach degree 20 within memory floor(log2 n)=20 or ceiling(log2 n)=21."
+  }
+}

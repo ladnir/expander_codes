@@ -1,0 +1,41 @@
+# Generated manuscript files.
+paper/*.aux
+paper/*.bbl
+paper/*.bcf
+paper/*.blg
+paper/*.fdb_latexmk
+paper/*.fls
+paper/*.log
+paper/*.out
+paper/*.pdf
+paper/*.run.xml
+
+# Reusable verifier cache.
+.verification_cache/
+
+# Archived build products are retained locally but not versioned.
+notes/previous_draft/output/
+output/*
+!output/pdf/
+output/pdf/*
+!output/pdf/exact-enumerator-bounds-for-expander-codes.pdf
+
+# Scratch work and native build products (formerly inherited from parent repo).
+tmp/
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+*.lib
+*.exp
+*.lp
+*.vipr
+*.vipr_ori
+*.npz
+*.tgz
+*.tar
+
+# Python caches.
+__pycache__/
+*.py[cod]

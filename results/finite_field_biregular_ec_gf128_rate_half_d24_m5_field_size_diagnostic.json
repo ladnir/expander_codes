@@ -1,0 +1,54 @@
+{
+  "schema": "finite-field-ec-frozen-certificate-diagnostic-v1",
+  "certified": false,
+  "base_certificate": "finite_field_biregular_ec_gf128_rate_half_d24_m5_40bit.json",
+  "base_certificate_sha256": "bd32e741cc71394d4856cf411880aca9e415e46137e1e60214c57c1e7721940c",
+  "parameters": {
+    "k": 1048572,
+    "n": 2097144,
+    "left_degree": 24,
+    "right_degree": 12,
+    "memory": 5,
+    "base_field_bits": 128,
+    "base_cutoff": 1015826,
+    "gv_fraction": 0.9841454267464768,
+    "minimum_valid_field_bits": 127
+  },
+  "method": "Freeze the support partition and positive markers from the base certificate. Change the field order to 2^b and evaluate either the corresponding GV-relative cutoff or the fixed base cutoff in floating-point arithmetic. Rows 127, 128, and 129 were also verified with outward-rounded interval arithmetic. Row 136 has a separate interval certificate after a local retuning of five structural output markers.",
+  "certificates": {
+    "127": {
+      "file": "finite_field_biregular_ec_gf127_rate_half_d24_m5_40bit.json",
+      "sha256": "5aac1cfe82ce1c7fb9b0b6388361a6ba5c8adda384cba6b43391ebb6c71e4272",
+      "security_bits": 45.835773713526786,
+      "markers": "frozen"
+    },
+    "128": {
+      "file": "finite_field_biregular_ec_gf128_rate_half_d24_m5_40bit.json",
+      "sha256": "bd32e741cc71394d4856cf411880aca9e415e46137e1e60214c57c1e7721940c",
+      "security_bits": 45.03173943084782,
+      "markers": "base"
+    },
+    "129": {
+      "file": "finite_field_biregular_ec_gf129_rate_half_d24_m5_40bit.json",
+      "sha256": "5d19ac3acfe96951a89d0e6f3a63288585ac75600b63db691e516a2453f8f9a1",
+      "security_bits": 44.235738651592184,
+      "markers": "frozen"
+    },
+    "136": {
+      "file": "finite_field_biregular_ec_gf136_rate_half_d24_m5_38bit.json",
+      "sha256": "a95585cb22e8197589dd8e4444a2ab0588acb61d9628c31d9ce7b505b93f580f",
+      "security_bits": 38.78366095587348,
+      "markers": "locally retuned"
+    }
+  },
+  "rows": [
+    {"field_bits": 127, "gv_relative_cutoff": 1015699, "moving_cutoff_bits": 45.835773737646065, "fixed_cutoff_bits": 45.03173945497692},
+    {"field_bits": 128, "gv_relative_cutoff": 1015826, "moving_cutoff_bits": 45.03173945497692, "fixed_cutoff_bits": 45.03173945497692},
+    {"field_bits": 129, "gv_relative_cutoff": 1015950, "moving_cutoff_bits": 44.235738675713264, "fixed_cutoff_bits": 45.03173945497692},
+    {"field_bits": 130, "gv_relative_cutoff": 1016073, "moving_cutoff_bits": 43.43557478636565, "fixed_cutoff_bits": 45.03173945497692},
+    {"field_bits": 132, "gv_relative_cutoff": 1016314, "moving_cutoff_bits": 41.83819226999031, "fixed_cutoff_bits": 45.03173945497692},
+    {"field_bits": 136, "gv_relative_cutoff": 1016774, "moving_cutoff_bits": 38.690324823308664, "fixed_cutoff_bits": 45.03173945497692},
+    {"field_bits": 140, "gv_relative_cutoff": 1017207, "moving_cutoff_bits": 35.628312167277684, "fixed_cutoff_bits": 45.03173945497692},
+    {"field_bits": 144, "gv_relative_cutoff": 1017616, "moving_cutoff_bits": 32.66628072552967, "fixed_cutoff_bits": 45.03173945497692}
+  ]
+}

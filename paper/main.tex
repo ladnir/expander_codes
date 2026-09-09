@@ -1,0 +1,71 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{url}
+
+\input{macros}
+
+\title{Expander-Based Codes at the Gilbert--Varshamov Bound}
+\author{Peter Rindal}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We prove that Expand--Accumulate (EA) codes approach the Gilbert--Varshamov
+(GV) distance as the code length grows.  The result holds over the binary
+field and every fixed finite field.  At fixed rate, encoding uses
+$O(n\log n)$ expected field operations, with a tunable inverse-polynomial
+probability of sampling a bad code.
+Fixed-memory wrapped binary Expand--Convolute (EC) codes satisfy the same
+guarantee.  Allowing $O(n\log^2 n)$ expected field operations makes sampling
+failure negligible in the code length.
+
+These codes combine a sparse random linear map with an invertible recursive
+map.  Our analysis uses exact input--output weight enumerators in place of
+the earlier concentration bounds.  It also gives tighter constants in the
+logarithmic expected degree.
+
+Separately, we obtain finite-length bounds at small degrees by replacing
+independent incidence with regional regularity.  At rate one half, a
+two-sided regular EC ensemble with left/right degrees $10/5$ and memory $15$
+reaches $99.993\%$ of the binary Gilbert--Varshamov distance.  The probability
+of sampling a generator below this distance is less than $2^{-32.4990}$.
+
+We extend the construction to finite fields using independent nonzero edge
+labels and full-field convolution coefficients.  These coefficients mix
+field components; scalar extension of a binary matrix does not.  Over
+$\F_{2^{128}}$, degrees $24/12$ with memory $5$ reach $98.415\%$ of the
+rate-one-half Gilbert--Varshamov distance with sampling failure below
+$2^{-45.03}$.  Outward-rounded verifiers certify every finite claim.  The
+results concern minimum distance of sampled ensembles; they do not provide a
+decoder or a complete protocol-security proof.\footnote{This paper was created
+with the assistance of ChatGPT 5.6, 6.0.}
+\end{abstract}
+
+\input{01-introduction}
+\input{02-constructions}
+\input{03-enumerator-method}
+\input{04-binary-ea}
+\input{05-binary-ec}
+\input{06-regular-expanders}
+\input{07-prime-fields}
+\input{08-certificates}
+\input{09-discussion}
+
+\appendix
+\input{appendix-additional-ensembles}
+\input{appendix-nonwrapping}
+\input{appendix-analytic-details}
+\input{appendix-artifact}
+
+\bibliographystyle{alpha}
+\bibliography{references}
+\end{document}
