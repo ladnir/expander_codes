@@ -143,10 +143,50 @@ not provide evidence of a defect at the tested sizes, but this observation is
 not a distance proof.  Proving useful distance for structured or unit edge
 coefficients remains a separate problem.
 
+\paragraph{EA-based pseudorandom correlation functions.}
+\label{sec:pcf-impact}
+The PCF construction in~\cite[Section~5.2]{EA} makes expander degree a
+per-output cost.  In our notation, its noise vector has length $n$
+and one nonzero coordinate in each of $t$ equal-sized blocks.
+Write $b:=\lceil\log_2(n/t)\rceil$ for the bit length of a position within
+a block.  A relaxed distributed comparison function lets the parties
+evaluate shares of this accumulated noise at a requested coordinate.
+An expander row of weight $d$ requires $d$ such evaluations.
+The leading work is about $db$ pseudorandom-generator evaluations per
+party; the degree-two correlation construction has leading work quadratic
+in $db$~\cite[Section~5.4]{EA}.
+
+Our tighter EA bounds improve the code parameters underlying these costs.
+For example, at relative distance $0.05$, the sufficient asymptotic
+Bernoulli degree threshold decreases from $4.938\ln n$ to $1.773\ln n$.
+This is a roughly $64\%$ reduction in the degree coefficient, and hence
+in the corresponding coefficient of expected comparison-function work
+at fixed block size.
+It compares sufficient asymptotic distance conditions, not finite security
+margins or measured PCF runtimes.  The original PCF estimates already use
+smaller, empirically motivated degrees; we do not claim the same percentage
+improvement over those estimates.
+Our finite bounds also supply explicit sampling guarantees: at
+$k=2^{30}$ and $n=5k$, expected degree $62$ certifies relative distance
+$0.05$ with failure below $2^{-20.23}$
+(Table~\ref{tab:ea-finite}).  This certificate uses Bernoulli rows, not
+rows conditioned to have weight $62$.
+
+Left-regular EA offers a second route: its independently sampled rows have
+fixed evaluation cost and retain the single accumulator.
+Our regional construction is the regular-row variant proposed
+in~\cite[Section~3.4]{EA}; Section~\ref{sec:regular} supplies finite
+distance bounds for it.  These are bounds on expander regularity, distinct
+from the regularity of the PCF's noise.
+The PCF security theorem still assumes EA-LPN with its specified noise
+distribution and a secure comparison primitive.  Our contribution improves
+the distance guarantees supporting that assumption, not a reduction from
+minimum distance to full PCF security.
+
 \paragraph{Cryptographic interpretation.}
 A distance certificate bounds the probability that code generation produces
 a low-weight nonzero codeword.  It does not by itself establish the security
-of a PCG or a silent protocol.  Such an application must connect its attack
+of a PCG, a PCF, or a silent protocol.  Such an application must connect its attack
 model and noise distribution to the certified distance event.  It must also
 account for any public structure not sampled by our ensemble.
 

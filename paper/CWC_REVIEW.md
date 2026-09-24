@@ -239,3 +239,31 @@ the field and memory scope, and the distinction between inverse-polynomial
 and negligible failure. The exact shrinking gap, degree constants, and
 failure formulas remain in the introduction and theorem statements. This
 author-requested simplification changes presentation, not the result.
+
+## EA-based PCF application framing, 2026-09-09
+
+The abstract and introduction now identify the original EA-based PCF as an
+application of the improved degree bounds. The introduction defines the PCF
+interface and the role of distributed comparisons before discussing cost
+(CWC-01, CWC-02, CWC-04). The discussion maps row weight to local evaluation
+work using Sections 5.2 and 5.4 of the EA paper. It separates the approximately
+64% reduction between sufficient asymptotic degree thresholds from finite
+failure margins and the original empirical PCF estimates (CWC-08, CWC-09).
+The finite degree-62 example retains the Bernoulli distribution explicitly.
+The regular-row alternative is identified with the EA paper's Section 3.4
+variant; expander regularity is not conflated with noise regularity (CWC-05).
+The application retains the single accumulator and the original EA-LPN and
+comparison-primitive assumptions. No new protocol-security theorem or measured
+PCF speedup is claimed. No code parameter or certificate was changed.
+
+## One-stage EA and parallel depth, 2026-09-09
+
+The introduction now emphasizes that the improved EA distance result retains
+one sparse expansion and one parallel prefix sum. Section 2 defines arithmetic
+work and depth for a fixed sparse layout, excluding setup and data movement
+(CWC-03, CWC-09). Balanced sums account for collisions in the sparse expansion;
+the accumulator uses a work-efficient parallel scan. The RAA comparison concerns
+its natural staged encoder, not a lower bound on arbitrary circuits. Both
+constructions remain in the logarithmic-depth class. The transpose reverses
+the two stages and uses a suffix sum under the paper's row-vector convention.
+Full-vector encoding is distinguished from local PCF evaluation (CWC-05).

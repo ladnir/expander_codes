@@ -192,3 +192,33 @@ $O(n\log^2 n)$ when $n\rho=(\ln n)^2$.
 Theorem~\ref{thm:gv-log-degree} approaches GV in the first regime with
 tunable polynomial sampling failure.  Corollary~\ref{cor:gv-negligible}
 uses the second regime to make sampling failure negligible.
+
+\paragraph{Parallel depth of EA.}
+\label{sec:ea-depth}
+Depth counts the longest chain of dependent field operations, with each
+addition or multiplication taking one step and each operation having at
+most two inputs.  Fix the sampled matrix and its sparse layout before
+encoding; this arithmetic model does not charge for setup or data movement.
+Let $E$ be the number of nonzero entries of $\B$, and let $\Delta_R$ be
+the largest number of nonzero entries in a column.
+Independent edge products followed by balanced sums compute $\x\B$ in
+$O(E+n)$ work and $O(1+\log(1+\Delta_R))$ depth.
+The accumulator is a prefix sum, which has $O(n)$ work and $O(\log n)$
+depth~\cite{BlellochTR90}.  Thus EA encoding has $O(E+n)$ work and
+$O(1+\log(1+\Delta_R)+\log n)$ depth.
+
+Only one prefix sum is needed.  In the usual staged evaluation of RAA,
+the first accumulation feeds a permutation and then a second accumulation.
+Each additional accumulator adds another dependent scan, although a fixed
+number of stages still gives $O(\log n)$ arithmetic depth.
+This is a comparison of the natural staged encoders, not a circuit-depth
+lower bound for RAA.  Our GV result for EA does not require adding such stages.
+
+The same distinction applies to transposed encoding.
+For a column vector $\mathbf v$, compute
+$\G\mathbf v=\B(\A\mathbf v)$: first one suffix sum, then the sparse map.
+Here $\A$ is upper triangular under our row-vector convention, so its
+action on a column vector is a suffix sum rather than a prefix sum.
+The depth bound replaces $\Delta_R$ by the largest row weight of $\B$.
+This full-vector computation is separate from the local PCF evaluation,
+which uses comparison functions to avoid scanning the full noise vector.

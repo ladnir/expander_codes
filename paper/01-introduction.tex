@@ -1,8 +1,11 @@
 \section{Introduction}
 \label{sec:introduction}
 
-Sparse linear codes appear inside several pseudorandom correlation generators
-(PCGs) and silent cryptographic protocols.  These applications do not begin with a
+Sparse linear codes appear inside pseudorandom correlation generators
+(PCGs), pseudorandom correlation functions (PCFs), and silent cryptographic
+protocols.  A PCF lets two parties use short correlated keys to generate
+correlated outputs locally, on demand, at a shared input.  These applications
+do not begin with a
 received word and ask a decoder to correct errors.  They instead need a
 sampled linear map to send every nonzero message to an output with many
 nonzero coordinates.  In coding terminology, the generator must have large
@@ -14,6 +17,29 @@ sparse random matrix.  EA follows that matrix by a running sum.  EC follows it
 by a randomized recursive convolution.  The sparse first stage keeps encoding
 cheap, while the recursive second stage spreads each nonzero contribution
 through the output.
+
+\paragraph{Impact on EA-based correlation functions.}
+An important application is the EA-based PCF of Boyle et al.~\cite{EA}.
+Its local evaluation uses one distributed comparison-function evaluation
+per nonzero expander entry in the requested row.
+The comparison primitive gives the parties shares of a value determined
+by a hidden threshold.  The single accumulator is essential to this
+construction: accumulated sparse noise can be represented by threshold
+functions.  Our EA bounds improve the provable degree--distance tradeoff
+without replacing that accumulator.  They therefore target a cost paid at
+every PCF evaluation, not just the cost of expanding a complete batch.
+Section~\ref{sec:pcf-impact} gives the cost connection and distinguishes
+the improvement in proved bounds from the original empirical parameter choices.
+
+\paragraph{One accumulation stage.}
+EA also has a simple parallel encoding structure: sparse expansion followed
+by one parallel prefix sum.  Our improved distance guarantees retain this
+structure.  Repeat--accumulate--accumulate (RAA) codes instead compose two
+accumulation stages, with a permutation between them~\cite[Remark~3.4]{EA}.
+EA therefore avoids a second dependent scan of the full vector.
+Both constructions admit logarithmic arithmetic depth; the advantage is
+fewer sequential stages, not a different asymptotic depth class.
+Section~\ref{sec:ea-depth} states the cost model, including transposed encoding.
 
 \paragraph{Full asymptotic GV distance at logarithmic degree.}
 Our main asymptotic result reaches the Gilbert--Varshamov (GV) distance,
@@ -193,6 +219,8 @@ The paper makes five contributions.
   followed by recursive rate-one maps.
   \item We sharpen the distance proofs for the original binary EA and wrapped
   EC ensembles, including direct comparisons with the published bounds.
+  For EA, the improved degree bounds address the local evaluation cost of
+  the existing PCF construction.
   \item We analyze left-regular and two-sided regular expanders.  Binary EC
   gives four near-GV degree--memory points.
   \item We extend the construction and analysis to fields near 128 bits using
